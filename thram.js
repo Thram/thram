@@ -1,5 +1,18 @@
+/**
+ * ThramJS
+ *
+ * Micro front-end framework
+ *
+ * Created by thram on 17/06/15.
+ */
 var thram = (function () {
 
+    /**
+     * Based on domready by Dustin Diaz: https://github.com/ded/domready
+     *
+     * @returns {Function}
+     * @private
+     */
     function _ready() {
         var fns = [], listener
             , doc = document
@@ -41,6 +54,22 @@ var thram = (function () {
     var views = (function () {
         var _views = {};
 
+        function enter() {
+            events.trigger('view:enter');
+        }
+
+        function leave() {
+            events.trigger('view:leave');
+            console.log('Leave!');
+            setTimeout(function () {
+                console.log('Time Out!')
+            }, 5000);
+        }
+
+        window.onbeforeunload = function () {
+            leave();
+        };
+
         function get(key) {
             return _views[key];
         }
@@ -50,6 +79,8 @@ var thram = (function () {
         }
 
         return {
+            enter: enter,
+            leave: leave,
             get: get,
             add: add
         }
@@ -100,7 +131,7 @@ var thram = (function () {
                     var url = match.shift();
                     var keys = route.route.match(/:(.+?)(\/|\?|$)/g);
                     if (keys) {
-                        keys = keys.join('-').replace(/:/g, '').replace(/\//g, '').split('-');
+                        keys = keys.join('&').replace(/:/g, '').replace(/\//g, '').split('&');
                         var values = match;
                         keys.forEach(function (key, i) {
                             params[key] = values[i];
@@ -119,9 +150,32 @@ var thram = (function () {
         }
     })();
 
+    var events = (function () {
+
+        function trigger(event, data) {
+            var ev = new Event('thram:' + event, data);
+            dispatchEvent(ev);
+        }
+
+        function on(event, func) {
+            addEventListener("thram:" + event, func);
+        }
+
+        function off(event, func) {
+            removeEventListener("thram:" + event, func);
+        }
+
+        return {
+            off: off,
+            on: on,
+            trigger: trigger
+        }
+    })()
+
 
     function start() {
         _ready()(function () {
+            views.enter();
             router.process();
         });
     }
@@ -130,6 +184,7 @@ var thram = (function () {
         routes: [],
         examples: {},
         toolbox: {},
+        events: events,
         router: router,
         modules: modules,
         components: components,
