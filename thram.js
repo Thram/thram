@@ -1,5 +1,26 @@
 var thram = (function () {
 
+    function _ready() {
+        var fns = [], listener
+            , doc = document
+            , hack = doc.documentElement.doScroll
+            , domContentLoaded = 'DOMContentLoaded'
+            , loaded = (hack ? /^loaded|^c/ : /^loaded|^i|^c/).test(doc.readyState)
+
+
+        if (!loaded)
+            doc.addEventListener(domContentLoaded, listener = function () {
+                doc.removeEventListener(domContentLoaded, listener)
+                loaded = 1;
+                while (listener = fns.shift()) listener()
+            });
+
+        return function (fn) {
+            loaded ? setTimeout(fn, 0) : fns.push(fn)
+        }
+
+    }
+
     var controllers = (function () {
         var _controllers = {};
 
@@ -77,11 +98,14 @@ var thram = (function () {
                 if (match) {
                     var params = {};
                     var url = match.shift();
-                    var keys = route.match(/:(.+?)(\/|$)/g).join('-').replace(/:/g, '').replace(/\//g, '').split('-');
-                    var values = match;
-                    keys.forEach(function (key, i) {
-                        params[key] = values[i];
-                    });
+                    var keys = route.route.match(/:(.+?)(\/|\?|$)/g);
+                    if (keys) {
+                        keys = keys.join('-').replace(/:/g, '').replace(/\//g, '').split('-');
+                        var values = match;
+                        keys.forEach(function (key, i) {
+                            params[key] = values[i];
+                        });
+                    }
 
                     var base = thram.views.get('base');
                     base && base.init(url, params);
@@ -95,19 +119,28 @@ var thram = (function () {
         }
     })();
 
-    router.process();
+
+    function start() {
+        _ready()(function () {
+            router.process();
+        });
+    }
 
     return {
         routes: [],
+        examples: {},
+        toolbox: {},
         router: router,
         modules: modules,
         components: components,
         controllers: controllers,
-        views: views
+        views: views,
+        start: start
     }
 })();
 
-thram.view = function () {
+thram.examples.view = function () {
+
     // View Example
     function init(url, params) {
         // Initialize View
@@ -116,4 +149,10 @@ thram.view = function () {
     return {
         init: init
     }
+};
+
+// Route Example
+thram.examples.route = {
+    route: '/test/:id',
+    view: 'test'
 };
