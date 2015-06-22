@@ -18,18 +18,18 @@ var thram = (function () {
             , doc = document
             , hack = doc.documentElement.doScroll
             , domContentLoaded = 'DOMContentLoaded'
-            , loaded = (hack ? /^loaded|^c/ : /^loaded|^i|^c/).test(doc.readyState)
+            , loaded = (hack ? /^loaded|^c/ : /^loaded|^i|^c/).test(doc.readyState);
 
 
         if (!loaded)
             doc.addEventListener(domContentLoaded, listener = function () {
-                doc.removeEventListener(domContentLoaded, listener)
+                doc.removeEventListener(domContentLoaded, listener);
                 loaded = 1;
-                while (listener = fns.shift()) listener()
+                while (listener = fns.shift()) listener();
             });
 
         return function (fn) {
-            loaded ? setTimeout(fn, 0) : fns.push(fn)
+            loaded ? setTimeout(fn, 0) : fns.push(fn);
         }
 
     }
@@ -41,8 +41,8 @@ var thram = (function () {
             return _controllers[key];
         }
 
-        function add(key, view) {
-            _controllers[key] = view;
+        function add(key, controller) {
+            _controllers[key] = controller;
         }
 
         return {
@@ -60,10 +60,6 @@ var thram = (function () {
 
         function leave() {
             events.trigger('view:leave');
-            console.log('Leave!');
-            setTimeout(function () {
-                console.log('Time Out!')
-            }, 5000);
         }
 
         window.onbeforeunload = function () {
@@ -93,8 +89,8 @@ var thram = (function () {
             return _components[key];
         }
 
-        function add(key, view) {
-            _components[key] = view;
+        function add(key, component) {
+            _components[key] = component;
         }
 
         return {
@@ -111,8 +107,25 @@ var thram = (function () {
             return _modules[key];
         }
 
-        function add(key, view) {
-            _modules[key] = view;
+        function add(key, module) {
+            _modules[key] = module;
+        }
+
+        return {
+            get: get,
+            add: add
+        }
+    })();
+    var models = (function () {
+
+        var _modules = {};
+
+        function get(key) {
+            return _modules[key];
+        }
+
+        function add(key, model) {
+            _modules[key] = model;
         }
 
         return {
@@ -122,30 +135,50 @@ var thram = (function () {
     })();
 
     var router = (function () {
-        function process() {
-            thram.routes.forEach(function (route) {
-                var routeMatcher = new RegExp(route.route.replace(/:[^\s/]+/g, '([\\w-]+)'));
-                var match = window.location.pathname.match(routeMatcher);
-                if (match) {
-                    var params = {};
-                    var url = match.shift();
-                    var keys = route.route.match(/:(.+?)(\/|\?|$)/g);
-                    if (keys) {
-                        keys = keys.join('&').replace(/:/g, '').replace(/\//g, '').split('&');
-                        var values = match;
-                        keys.forEach(function (key, i) {
-                            params[key] = values[i];
-                        });
-                    }
+        function go(route) {
+            window.location.href = route;
+        }
 
-                    var base = thram.views.get('base');
-                    base && base.init(url, params);
-                    thram.views.get(route.view).init(url, params);
-                }
-            });
+        function process() {
+            var BreakException = {};
+            try {
+                thram.routes.forEach(function (route) {
+                    var routeMatcher = new RegExp(route.route.replace(/:[^\s/]+/g, '([\\w-]+)'));
+                    var url = window.location.pathname;
+                    var match = url.match(routeMatcher);
+                    if (match && match.length > 0 && match[0] === url) {
+                        var params = {};
+                        if (route.route.indexOf(':') >= 0) {
+                            var keys = route.route.match(/:(.+?)(\/|\?|$)/g);
+                            if (keys) {
+                                keys = keys.join('&').replace(/:/g, '').replace(/\//g, '').split('&');
+                                var values = match;
+                                keys.forEach(function (key, i) {
+                                    params[key] = values[i];
+                                });
+                            }
+                        }
+
+                        function initView() {
+                            var base = thram.views.get('base');
+                            base && base.init(url, params);
+                            thram.views.get(route.view).init(url, params);
+                        }
+
+                        route.validate ?
+                            (route.validate.validation() ? initView() : route.validate.onValidationFail())
+                            : initView();
+
+                        throw BreakException;
+                    }
+                });
+            } catch (e) {
+                if (e !== BreakException) throw e;
+            }
         }
 
         return {
+            go: go,
             process: process
         }
     })();
@@ -170,7 +203,25 @@ var thram = (function () {
             on: on,
             trigger: trigger
         }
-    })()
+    })();
+
+    var toolbox = (function () {
+
+        var _tools = {};
+
+        function get(key) {
+            return _tools[key];
+        }
+
+        function add(key, tool) {
+            _tools[key] = tool;
+        }
+
+        return {
+            get: get,
+            add: add
+        }
+    })();
 
 
     function start() {
@@ -183,9 +234,10 @@ var thram = (function () {
     return {
         routes: [],
         examples: {},
-        toolbox: {},
+        toolbox: toolbox,
         events: events,
         router: router,
+        models: models,
         modules: modules,
         components: components,
         controllers: controllers,
