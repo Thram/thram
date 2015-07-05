@@ -400,7 +400,11 @@ var thram = (function () {
         };
 
         function go(route) {
-            window.location.href = route;
+            if (settings.clientSide) {
+                window.location.hash = '#' + route;
+            } else {
+                window.location.href = route;
+            }
         }
 
         function _processView(url, route, params) {
@@ -441,7 +445,7 @@ var thram = (function () {
                             if (settings.clientSide) {
                                 var options = {
                                     async: false,
-                                    data: route.data
+                                    data: route.data || {}
                                 };
                                 options['data'].params = params;
                                 if (route.templateUrl) {
