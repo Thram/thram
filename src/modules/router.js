@@ -2,21 +2,14 @@
  * Created by thram on 20/07/15.
  */
 thram.router = (function () {
-    var settings = {
-        clientSide: false
-    };
+    var _routes = {};
 
     function go(route) {
-        if (settings.clientSide) {
+        if (thram.templates) {
             window.location.hash = '#' + route;
         } else {
             window.location.href = route;
         }
-    }
-
-    function _processView(url, route, params) {
-        thram.views.base && thram.views.base.init(url, params);
-        thram.views[route.view].init(url, params);
     }
 
     function process() {
@@ -25,12 +18,12 @@ thram.router = (function () {
             thram.routes.forEach(function (route) {
                 var routeMatcher = new RegExp(route.route.replace(/:[^\s/]+/g, '([\\w-]+)'));
                 var url = window.location.pathname;
-                if (settings.clientSide && window.location.hash != '') {
+                if (thram.templates && window.location.hash != '') {
                     var hash = window.location.hash;
                     if (hash.indexOf('#/') === 0) {
                         url = hash.substr(hash.indexOf('#') + 1);
                     } else {
-                        views.scrollTo(hash);
+                        thram.views.scrollTo(hash);
                     }
                 }
 
@@ -48,29 +41,11 @@ thram.router = (function () {
                         }
                     }
 
-                    function initView() {
-                        if (settings.clientSide) {
-                            var options = {
-                                async: false,
-                                data: route.data || {}
-                            };
-                            options['data'].params = params;
-                            if (route.templateUrl) {
-                                options['async'] = true;
-                                options['success'] = function (res) {
-                                    _processView(url, route, params);
-                                };
-                                templates.process(route.templateUrl, options);
-                            } else {
-                                templates.process(route.template, options);
-                            }
-                        }
-                        _processView(url, route, params)
-                    }
+                    // Validation to restrict the access to the route
 
                     route.validate ?
-                        (route.validate.validation() ? initView() : route.validate.onValidationFail())
-                        : initView();
+                        (route.validate.validation() ? thram.render.view(route.view, params) : route.validate.onValidationFail())
+                        : thram.render.view(route.view, params);
 
                     throw BreakException;
                 }
@@ -80,16 +55,17 @@ thram.router = (function () {
         }
     }
 
-    function enableClientSideRouting() {
-        settings.clientSide = true;
-        $(window).bind('hashchange', function (e) {
-            process();
-            console.log(window.location.hash);
-        });
+    function register(route, options) {
+        if (!options.view) throw {
+            code: 'no-view',
+            name: "No View attached",
+            message: "There is no View attached to the route. Please add one. Ex.: thram.router.register('/', {view: 'viewId' }"
+        };
+        _routes[route] = options;
     }
 
     return {
-        enableClientSideRouting: enableClientSideRouting,
+        register: register,
         go: go,
         process: process
     }

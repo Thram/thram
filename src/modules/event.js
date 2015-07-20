@@ -7,7 +7,7 @@ thram.event = (function () {
         var ev = new Event('thram:' + event, data);
         dispatchEvent(ev);
     };
-    _EventApi.on = function on(event, func, reset) {
+    _EventApi.on = function (event, func, reset) {
         if (reset) {
             removeEventListener("thram:" + event, func);
         }
@@ -18,4 +18,4 @@ thram.event = (function () {
     };
 
     return _EventApi;
-});
+})();

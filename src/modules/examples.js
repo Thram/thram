@@ -5,12 +5,9 @@ thram.examples = {
     view: function () {
         // Create
         thram.create.view('test', function () {
-            var template = '<div>Example</div>',
-                templateURL = 'views/test.html';
             return {
-                // Could have Render if has a template attached for client-side routing otherwise it just to control the view
-                render: function () {
-                },
+                template: '<div>Example</div>',
+                templateURL: 'views/test.html',
                 controller: function () {
                 }
             }
@@ -25,10 +22,10 @@ thram.examples = {
     component: function () {
         // Create
         thram.create.component('test', function () {
-            var template = '<div>Example</div>',
-                templateURL = 'component/test.html';
             return {
-                render: function () {
+                template: '<div>Example</div>',
+                templateURL: 'component/test.html',
+                controller: function () {
                 }
             }
         });
@@ -97,6 +94,10 @@ thram.examples = {
         thram.event.trigger('test');
     },
     router: function () {
+        thram.routes = [
+            {route: '/', view: 'index'},
+            {route: '/:app_namespace', view: 'details'}
+        ];
     },
     storage: function () {
     },
