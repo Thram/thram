@@ -1,0 +1,7 @@
+# Created by .ignore support plugin (hsz.mobi)
+.sass-cache
+.DS_Store
+node_modules
+bower_components
+public
+.idea
