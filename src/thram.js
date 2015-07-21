@@ -74,7 +74,8 @@
             return _DOMApi;
         };
         _DOMApi.render = function (id, options) {
-            return thram.render.component(_DOMApi, id, options);
+            options['container'] = _DOMApi;
+            return thram.render.component(id, options);
         };
 
         return _DOMApi;
@@ -102,7 +103,7 @@
         'component_not_valid': {
             code: 'component-not-valid',
             name: "Component format not valid",
-            message: "The Component Object must have a 'render' method."
+            message: "The Component Object must have a 'template' or 'templateURL' attached."
         }
     };
 
@@ -128,7 +129,8 @@
 
         function component(id, obj) {
             try {
-                if (thram.toolbox.isFunction(obj().controller)) {
+                var componentObj = obj();
+                if (componentObj.template || (!componentObj.template && componentObj.templateURL)) {
                     _components[id] = obj;
                     return obj;
                 }
@@ -202,57 +204,66 @@
         }
     })();
     thram.render = (function () {
-        function view(id, data) {
+        function view(id, options) {
             var view = _views[id]();
-            var url = window.location.pathname;
-            if (!thram.templates) throw _exceptions['missing_module'];
-            if (thram.templates) {
-                var options = {
-                    async: false,
-                    data: data
-                };
-                if (view.template) {
-                    thram.templates.process(view.template, options);
-                } else {
+            options = options || {};
+            options['async'] = false;
+
+            function _initView() {
+                var base = thram.get.view('base');
+                base && base(options['data']);
+                thram.views.current = id;
+                view.controller(options['data']);
+                thram.views.enter();
+                options['success'] && options['success'](view);
+            }
+
+            if (thram.router.clientSideRouting) {
+                // Render the HTML
+                if (!thram.templates) throw _exceptions['missing_module'];
+                var template = view.template;
+                if (!template) {
                     options['async'] = true;
                     options['success'] = function (res) {
-                        thram.views.template = res;
-                        thram.views.base && thram.views.base(url, data);
-                        thram.views.current = id;
-                        view.controller(url, data);
-                        thram.views.enter();
+                        view.template = res;
+                        _initView();
                     };
-                    thram.templates.process(view.templateUrl, options);
+                    template = view.templateURL;
                 }
+
+                thram.templates.process(template, options);
             }
-            thram.views.base && thram.views.base(url, data);
-            view.controller(url, data);
-            thram.views.enter();
+            (!thram.router.clientSideRouting || !options['async']) && _initView();
         }
 
-        function component($el, id, options) {
+        function component(id, options) {
+            // You need the Template Module to render the modules
+            if (!thram.templates) throw _exceptions['missing_module'];
+
             var component = _components[id];
-            options.container = $el;
-            options.async = false;
-            if (component.template) {
-                thram.templates.process(component.template, options);
-            } else {
-                options['async'] = true;
-                options['error'] = error;
-                options['success'] = function (res) {
-                    if (component.controller) {
-                        component.controller(_data);
-                    }
-                    thram.events.trigger('component:render:finished');
-                    success && success(res);
-                };
-                if (component.className)
-                    options['container'].addClass(component.className);
-                thram.templates.process(component.templateUrl, options);
+            options = options || {};
+            options['async'] = false;
 
-
+            function _initComponent() {
+                if (component.controller) {
+                    component.controller(options['data']);
+                }
+                thram.events.trigger('component:render:finished');
+                options['success'] && options['success'](component);
             }
 
+            var template = component.template;
+            if (!template) {
+                options['async'] = true;
+                options['success'] = function (res) {
+                    component.template = res;
+                    _initComponent();
+                };
+                template = component.templateURL;
+            }
+            if (component.className) options['container'].addClass(component.className);
+            thram.templates.process(template, options);
+            !options['async'] && _initComponent();
         }
 
         return {

@@ -8,7 +8,7 @@ thram.examples = {
             return {
                 template: '<div>Example</div>',
                 templateURL: 'views/test.html',
-                controller: function () {
+                controller: function (options) {
                 }
             }
         });
@@ -25,7 +25,9 @@ thram.examples = {
             return {
                 template: '<div>Example</div>',
                 templateURL: 'component/test.html',
-                controller: function () {
+                //Optional
+                className: '',
+                controller: function (options) {
                 }
             }
         });

@@ -65,6 +65,7 @@ thram.router = (function () {
     }
 
     return {
+        clientSideRouting: false,
         register: register,
         go: go,
         process: process
