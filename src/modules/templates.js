@@ -12,7 +12,7 @@ thram.templates = (function () {
         switch (_pool[templateUrl].status) {
             case 'pending':
                 _pool[templateUrl].status = 'loading';
-                return $("<div>").load(templateUrl, function (res) {
+                return $t("<div>").load(templateUrl, function (res) {
                     _pool[templateUrl].status = 'loaded';
                     thram.storage.set('template:' + templateUrl, res);
                     var done = 0;
@@ -26,7 +26,6 @@ thram.templates = (function () {
 
                     return success && success(res, container);
                 }, error);
-                break;
             case 'loading':
                 _pool[templateUrl].queue.push({success: success, error: error, container: container});
                 break;
@@ -53,7 +52,7 @@ thram.templates = (function () {
                 result, match;
             var add = function (line, js) {
                 js ? (code += line.match(reExp) ? line + '\n' : 'r.push(' + line + ');\n') :
-                    (code += line != '' ? 'r.push("' + line.replace(/"/g, '\\"') + '");\n' : '');
+                    (code += line !== '' ? 'r.push("' + line.replace(/"/g, '\\"') + '");\n' : '');
                 return add;
             };
             while (match = re.exec(template)) {
@@ -77,11 +76,11 @@ thram.templates = (function () {
 
     function process(template, options) {
         try {
-            if (options['async']) {
-                var container = options['container'] || $('[data-thram-view]');
+            if (options.async) {
+                var container = options.container || $t('[data-thram-view]');
                 var thramData = container.data('thram-data');
-                var _data = $.type(thramData) === "string" ? eval("(" + thramData + ")") : thramData;
-                container.data('thram-data', options['data'] || _data);
+                var _data = thram.toolbox.isString(thramData) ? eval("(" + thramData + ")") : thramData;
+                container.data('thram-data', options.data || _data);
                 _loader(template, container, function (res, el) {
                     var data = el.data('thram-data');
                     var html = _processMarkup(res, data);
@@ -90,22 +89,22 @@ thram.templates = (function () {
                     var components = el.find('[data-thram-component]');
                     if (components.size() > 0) {
                         components.each(function () {
-                            thram.components.render($(this));
+                            thram.components.render($t(this));
                         });
                     }
-                    options['success'] && options['success'](res, el);
+                    options.success && options.success(res, el);
                 });
             } else {
-                _processMarkup(template, options['data']);
+                _processMarkup(template, options.data);
             }
         } catch (e) {
             console.error(e);
-            options['error'] && options['error'](e);
+            options.error && options.error(e);
         }
 
     }
 
     return {
         process: process
-    }
+    };
 })();

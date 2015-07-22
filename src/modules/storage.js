@@ -17,18 +17,18 @@ thram.storage = (function () {
     store.get = function (key, defaultVal) {
     };
     store.has = function (key) {
-        return store.get(key) !== undefined
+        return store.get(key) !== undefined;
     };
     store.remove = function (key) {
     };
     store.clear = function () {
     };
     store.transact = function (key, defaultVal, transactionFn) {
-        if (transactionFn == null) {
+        if (transactionFn === null) {
             transactionFn = defaultVal;
             defaultVal = null;
         }
-        if (defaultVal == null) {
+        if (defaultVal === null) {
             defaultVal = {};
         }
         var val = store.get(key, defaultVal);
@@ -78,13 +78,13 @@ thram.storage = (function () {
         };
         store.get = function (key, defaultVal) {
             var val = store.deserialize(storage.getItem(key));
-            return (val === undefined ? defaultVal : val)
+            return (val === undefined ? defaultVal : val);
         };
         store.remove = function (key) {
             storage.removeItem(key);
         };
         store.clear = function () {
-            storage.clear()
+            storage.clear();
         };
         store.getAll = function () {
             var ret = {};
@@ -98,7 +98,7 @@ thram.storage = (function () {
                 var key = storage.key(i);
                 callback(key, store.get(key));
             }
-        }
+        };
     } else if (doc.documentElement.addBehavior) {
         var storageOwner,
             storageContainer;
@@ -137,7 +137,7 @@ thram.storage = (function () {
                 var result = storeFunction.apply(store, args);
                 storageOwner.removeChild(storage);
                 return result;
-            }
+            };
         };
 
         // In IE7, keys cannot start with a digit or contain certain chars.
@@ -186,7 +186,7 @@ thram.storage = (function () {
             for (var i = 0, attr; attr = attributes[i]; ++i) {
                 callback(attr.name, store.deserialize(storage.getAttribute(attr.name)));
             }
-        })
+        });
     }
 
     try {

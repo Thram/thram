@@ -10,7 +10,7 @@ thram.examples = {
                 templateURL: 'views/test.html',
                 controller: function (options) {
                 }
-            }
+            };
         });
 
         // Get
@@ -29,7 +29,7 @@ thram.examples = {
                 className: '',
                 controller: function (options) {
                 }
-            }
+            };
         });
 
         // Get
@@ -51,7 +51,7 @@ thram.examples = {
                 _obj[id] = val;
             }
 
-            return {get: get, set: set}
+            return {get: get, set: set};
         });
 
         // Get
@@ -66,17 +66,17 @@ thram.examples = {
         // Create
         thram.create.tool('test', function () {
             function log(message) {
-                console.log(message)
+                console.log(message);
             }
 
             function error(message) {
-                console.log(message)
+                console.log(message);
             }
 
             return {
                 log: log,
                 error: error
-            }
+            };
         });
 
         // Get
@@ -85,12 +85,11 @@ thram.examples = {
         thram.toolbox.test.log('Message!');
         // Remove
         thram.remove.tool('test');
-    }
-    ,
+    },
     events: function () {
         // Create
         thram.event.on('test', function (ev) {
-            console.log(ev)
+            console.log(ev);
         });
         thram.event.off('test');
         thram.event.trigger('test');

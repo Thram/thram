@@ -12,7 +12,7 @@ thram.toolbox = (function () {
                 return "global";
             }
             return toString.call(obj).replace(re, '$1').toLowerCase();
-        }
+        };
     })(this);
 
     _ToolBoxApi.isDOMElement = function (obj) {
@@ -50,6 +50,16 @@ thram.toolbox = (function () {
 
     _ToolBoxApi.isFunction = function (obj) {
         return _ToolBoxApi.isType(obj, 'function');
+    };
+    // convert any string to camelCase
+    _ToolBoxApi.toCamelCase = function (str) {
+        return str.toLowerCase()
+            .replace(/['"]/g, '')
+            .replace(/\W+/g, ' ')
+            .replace(/ (.)/g, function ($1) {
+                return $1.toUpperCase();
+            })
+            .replace(/ /g, '');
     };
 
     return _ToolBoxApi;
