@@ -1,4 +1,4 @@
-/** tetas
+/**
  * ThramJS
  *
  * Micro front-end framework
@@ -25,37 +25,72 @@
         _el = thram.toolbox.isDOMElement(selector) ? selector : (/<[a-z][\s\S]*>/i.test(selector)) ? _create(selector) : _query(selector);
 
         _DOMApi.element = _el;
-        _DOMApi.data = function () {
-            if (arguments) {
-                var key = thram.toolbox.toCamelCase(arguments[0].split('-').join(' '));
-                return arguments.length == 1 ? _el.dataset[key] : _el.dataset[key] = arguments[1];
+        _DOMApi.remove = function () {
+            if (arguments[0]) {
+                if (arguments[1]) {
+                    var key = thram.toolbox.toCamelCase(arguments[1].split('-').join(' '));
+                    switch (arguments[0]) {
+                        case 'data':
+                            delete _el.dataset[key];
+                            break;
+                        case 'prop':
+                            delete _el[key];
+                            break;
+                        case 'attr':
+                            _el.removeAttribute(key);
+                            break;
+                        case 'css':
+                            delete _el.style[key];
+                            break;
+                    }
+                    return _DOMApi;
+                }
+                throw thram.exceptions.missing_argument;
+            } else {
+                _el.parentElement.removeChild(_el);
             }
-            throw thram.exceptions.missing_key
         };
-        _DOMApi.prop = function () {
-            if (arguments) {
+
+        _DOMApi.data = function () {
+            if (arguments[0]) {
                 var key = thram.toolbox.toCamelCase(arguments[0].split('-').join(' '));
-                return arguments.length == 1 ? _el[key] : _el[key] = arguments[1];
+                return arguments[1] ? _el.dataset[key] = arguments[1] : _el.dataset[key];
             }
-            throw thram.exceptions.missing_key
+            throw thram.exceptions.missing_key;
+        };
+
+        _DOMApi.prop = function () {
+            if (arguments[0]) {
+                var key = thram.toolbox.toCamelCase(arguments[0].split('-').join(' '));
+                return arguments[1] ? _el[key] = arguments[1] : _el[key];
+            }
+            throw thram.exceptions.missing_key;
         };
         _DOMApi.attr = function () {
-            if (arguments) {
-                return arguments.length == 1 ? _el.getAttribute(arguments[0]) : _el.setAttribute(arguments[0], arguments[1]);
+            if (arguments[0]) {
+                return arguments[1] ? _el.setAttribute(arguments[0], arguments[1]) : _el.getAttribute(arguments[0]);
             }
-            throw thram.exceptions.missing_key
+            throw thram.exceptions.missing_key;
         };
         _DOMApi.css = function () {
-            if (arguments) {
+            if (arguments[0]) {
                 var key = thram.toolbox.toCamelCase(arguments[0].split('-').join(' '));
-                return arguments.length == 1 ? _el.style[key] : _el.style[key] = arguments[1];
+                return arguments[1] ? _el.style[key] = arguments[1] : _el.style[key];
             }
-            throw thram.exceptions.missing_key
+            throw thram.exceptions.missing_key;
         };
 
         _DOMApi.append = function () {
-            _el.innerHTML += thram.toolbox.isString(arguments[0]) ? arguments[0] : arguments[0].element.innerHTML;
+            if (arguments[0])
+                _el.innerHTML += thram.toolbox.isString(arguments[0]) ? arguments[0] : arguments[0].element.innerHTML;
             return _DOMApi;
+        };
+
+        _DOMApi.size = function () {
+            return _el.length;
+        };
+        _DOMApi.html = function () {
+            return arguments[0] ? (_el.innerHTML = thram.toolbox.isString(arguments[0]) ? arguments[0] : arguments[0].element.innerHTML) : _el.innerHTML;
         };
 
         _DOMApi.after = function () {
@@ -108,9 +143,22 @@
             }
 
         };
+        _DOMApi.load = function () {
+            var options = arguments[0] || {};
+            var success = options.success;
+            options.type = 'html';
+            options.success = function (res) {
+                var html = $t(res);
+                _DOMApi.append(html);
+                success && success(html);
+            };
+            thram.ajax.get(options);
+        };
 
         return _DOMApi;
     };
+
+    // Core
 
 
     /**
@@ -133,8 +181,6 @@
             loaded ? setTimeout(fn, 0) : fns.push(fn);
         };
     }
-
-    // Core
 
     var _views = {}, _components = {}, _models = {};
 
@@ -238,6 +284,7 @@
             var v = _views[id]();
             options = options || {};
             options.async = false;
+            var success = options.success;
 
             function _initView() {
                 var base = thram.get.view('base');
@@ -245,7 +292,7 @@
                 thram.views.current = id;
                 v.controller(options.data);
                 thram.views.enter();
-                options.success && options.success(v);
+                success && success(v);
             }
 
             if (thram.router.clientSideRouting) {
@@ -302,6 +349,7 @@
         };
     })();
 
+
     thram.start = (function () {
         _ready()(function () {
             thram.views.enter();
@@ -311,6 +359,174 @@
     window.thram = thram;
     window.$t = window.thram;
 
+})();
+/**
+ * Created by thram on 23/07/15.
+ */
+thram.ajax = (function () {
+    var _AjaxApi = {
+        credentials: false
+    };
+
+    function _new() {
+        var XMLHTTP_IDS, xmlhttp, success = false, i;
+        // Mozilla/Chrome/Safari/IE7+ (normal browsers)
+        try {
+            // For cross-origin requests, some simple logic
+            // to determine if XDomainReqeust is needed.
+            if (thram.toolbox.isUndefined(new XMLHttpRequest().withCredentials)) {
+                xmlhttp = new XDomainRequest();
+            } else {
+                xmlhttp = new XMLHttpRequest();
+            }
+        } catch (e1) {
+            // IE(?!)
+            XMLHTTP_IDS = ['MSXML2.XMLHTTP.5.0', 'MSXML2.XMLHTTP.4.0', 'MSXML2.XMLHTTP.3.0', 'MSXML2.XMLHTTP', 'Microsoft.XMLHTTP'];
+            for (i = 0; i < XMLHTTP_IDS.length && !success; i++) {
+                try {
+                    success = true;
+                    xmlhttp = new ActiveXObject(XMLHTTP_IDS[i]);
+                } catch (e2) {
+                }
+            }
+            if (!success) {
+                throw new Error('Unable to create XMLHttpRequest!');
+            }
+        }
+
+        return xmlhttp;
+    }
+
+    function _jsonp() {
+        // TODO Implement jsonp
+
+        //window.myJsonpCallback = function(data) {
+        //    // handle requested data from server
+        //};
+        //var scriptEl = document.createElement('script');
+        //scriptEl.setAttribute('src', 'http://jsonp-aware-endpoint.com/user?callback=myJsonpCallback&id=123');
+        //document.body.appendChild(scriptEl);
+    }
+
+    function _ajax() {
+        if (arguments) {
+            var options = arguments[0] || {};
+            var request = _new();
+            try {
+                options.headers = options.headers || {};
+                if (!options.headers['Content-Type']) {
+                    options.type = options.type || 'html';
+                    var contentType;
+                    switch (options.type) {
+                        case 'txt':
+                            contentType = 'text/plain';
+                            break;
+                        case 'jsonp':
+                            _jsonp(options);
+                            return;
+                            break;
+                        case 'json':
+                            contentType = 'application/json';
+                            var success = options.success;
+                            options.success = function (res) {
+                                success && success(JSON.parse(res));
+                            };
+                            break;
+                        case 'html':
+                            contentType = 'text/html';
+                            break;
+                        default:
+                            contentType = 'application/x-www-form-urlencoded';
+
+                    }
+                    options.headers['Content-Type'] = contentType + '; charset=UTF-8';
+                }
+
+                request.withCredentials = options.credentials || _AjaxApi.credentials;
+                request.open(options.method, encodeURI(options.url), true);
+                for (var header in options.headers) {
+                    options.headers.hasOwnProperty(header) && request.setRequestHeader(header, options.headers[header]);
+                }
+                request.onload = function () {
+                    if (request.status === 200) {
+                        options.success && options.success(request.responseText);
+                    } else {
+                        throw {error: request.status, message: request.statusText};
+                    }
+                };
+                request.onreadystatechange = function () { // set request handler
+                    var level;
+                    if (request.readyState === 4) { // if state = 4 (operation is completed)
+                        if (request.status === 200) { // and the HTTP status is OK
+                            // get progress from the XML node and set progress bar width and innerHTML
+                            level = request.responseXML ? request.responseXML.getElementsByTagName('PROGRESS')[0].firstChild.nodeValue : 100;
+                            options.progress && options.progress(level);
+                        } else { // if request status is not OK
+                            throw {error: request.status, message: request.statusText};
+                        }
+                    }
+                };
+                var data = options.data || {};
+                request.send(data instanceof FormData ? data : JSON.stringify(data));
+            } catch (error) {
+                options.error && options.error(error);
+            }
+
+        }
+
+    }
+
+    function _processOptions() {
+        var options = arguments[0] || {};
+        options.success = options.success || console.log;
+        options.error = options.error || console.error;
+        return options;
+    }
+
+    _AjaxApi.get = function () {
+        var options = _processOptions(arguments[0]);
+        options.method = 'GET';
+        _ajax(options);
+    };
+    _AjaxApi.post = function () {
+        var options = _processOptions(arguments[0]);
+        options.method = 'GET';
+        _ajax(options);
+    };
+
+    _AjaxApi.post = function () {
+        var options = _processOptions(arguments[0]);
+        options.method = 'POST';
+        _ajax(options);
+    };
+    _AjaxApi.put = function () {
+        var options = _processOptions(arguments[0]);
+        options.method = 'PUT';
+        _ajax(options);
+
+    };
+    _AjaxApi.patch = function () {
+        var options = _processOptions(arguments[0]);
+        options.method = 'PATCH';
+        _ajax(options);
+    };
+    _AjaxApi.delete = function () {
+        var options = _processOptions(arguments[0]);
+        options.method = 'DELETE';
+        _ajax(options);
+    };
+    _AjaxApi.form = function () {
+        var options = _processOptions(arguments[0]);
+        var formData = new FormData();
+        for (var key in options.data) {
+            options.data.hasOwnProperty(key) && formData.append(key, options.data[key]);
+        }
+        options.method = 'POST';
+        options.data = formData;
+        _ajax(options);
+    };
+
+    return _AjaxApi;
 })();
 /**
  * Created by thram on 20/07/15.
@@ -454,6 +670,11 @@ thram.exceptions = {
         name: "Missing id",
         message: "You need at least the ID."
     },
+    'missing_argument': {
+        code: 'missing-argument',
+        name: "Missing argument",
+        message: "This method needs arguments, please check the documentation."
+    },
     'missing_key': {
         code: 'missing-key',
         name: "Missing key",
@@ -518,10 +739,11 @@ thram.router = (function () {
                         }
                     }
 
-                    // Validation to restrict the access to the route
+                    var view = thram.toolbox.isString(route.view) ? {id: route.view} : route.view
 
+                    // Validation to restrict the access to the route
                     route.validate ?
-                        (route.validate.validation() ? thram.render.view(route.view, params) : route.validate.onValidationFail())
+                        (route.validate.validation() ? thram.render.view(view.id, view.data) : route.validate.onValidationFail())
                         : thram.render.view(route.view, params);
 
                     throw BreakException;
@@ -767,20 +989,24 @@ thram.templates = (function () {
         switch (_pool[templateUrl].status) {
             case 'pending':
                 _pool[templateUrl].status = 'loading';
-                return $t("<div>").load(templateUrl, function (res) {
-                    _pool[templateUrl].status = 'loaded';
-                    thram.storage.set('template:' + templateUrl, res);
-                    var done = 0;
-                    _pool[templateUrl].queue.forEach(function (template) {
-                        template.success && template.success(res, template.container);
-                        done++;
-                        if (done === _pool[templateUrl].queue.length) {
-                            _pool[templateUrl].queue = [];
-                        }
-                    });
+                return $t("<div>").load({
+                    url: templateUrl,
+                    success: function (res) {
+                        _pool[templateUrl].status = 'loaded';
+                        thram.storage.set('template:' + templateUrl, res);
+                        var done = 0;
+                        _pool[templateUrl].queue.forEach(function (template) {
+                            template.success && template.success(res, template.container);
+                            done++;
+                            if (done === _pool[templateUrl].queue.length) {
+                                _pool[templateUrl].queue = [];
+                            }
+                        });
 
-                    return success && success(res, container);
-                }, error);
+                        return success && success(res, container);
+                    },
+                    error: error
+                });
             case 'loading':
                 _pool[templateUrl].queue.push({success: success, error: error, container: container});
                 break;
@@ -796,9 +1022,9 @@ thram.templates = (function () {
 
     }
 
-    function _processMarkup(template, data) {
-        console.log('process markup!');
-        if (template) {
+    function _processMarkup($template, data) {
+        if ($template) {
+            var template = $template.html();
             data = data || {};
             var re = /\{\{(.+?)}}/g,
                 reExp = /(^( )?(var|if|for|else|switch|case|break|{|}|;))(.*)?/g,
@@ -836,18 +1062,18 @@ thram.templates = (function () {
                 var thramData = container.data('thram-data');
                 var _data = thram.toolbox.isString(thramData) ? eval("(" + thramData + ")") : thramData;
                 container.data('thram-data', options.data || _data);
-                _loader(template, container, function (res, el) {
-                    var data = el.data('thram-data');
+                _loader(template, container, function (res, $el) {
+                    var data = $el.data('thram-data');
                     var html = _processMarkup(res, data);
-                    el.removeData('thram-data');
-                    el.html(html);
-                    var components = el.find('[data-thram-component]');
+                    $el.remove('data', 'thram-data');
+                    $el.html(html);
+                    var components = $el.find('[data-thram-component]');
                     if (components.size() > 0) {
                         components.each(function () {
-                            thram.components.render($t(this));
+                            thram.render.component(components.data('thram-component'), data);
                         });
                     }
-                    options.success && options.success(res, el);
+                    options.success && options.success(res, $el);
                 });
             } else {
                 _processMarkup(template, options.data);
@@ -888,7 +1114,7 @@ thram.toolbox = (function () {
     };
 
     _ToolBoxApi.isUndefined = function (obj) {
-        return $t.isType(obj, 'undefined');
+        return _ToolBoxApi.isType(obj, 'undefined');
     };
 
     _ToolBoxApi.isNull = function (obj) {
@@ -928,6 +1154,26 @@ thram.toolbox = (function () {
     };
 
     return _ToolBoxApi;
+})();
+/**
+ * Created by thram on 23/07/15.
+ */
+thram.url = (function () {
+    var _URLApi = {};
+
+    _URLApi.encodeParams = function (object) {
+        var encodedString = '';
+        for (var prop in object) {
+            if (object.hasOwnProperty(prop)) {
+                if (encodedString.length > 0) {
+                    encodedString += '&';
+                }
+                encodedString += encodeURI(prop + '=' + object[prop]);
+            }
+        }
+        return encodedString;
+    };
+    return _URLApi;
 })();
 /**
  * Created by thram on 20/07/15.

@@ -12,20 +12,24 @@ thram.templates = (function () {
         switch (_pool[templateUrl].status) {
             case 'pending':
                 _pool[templateUrl].status = 'loading';
-                return $t("<div>").load(templateUrl, function (res) {
-                    _pool[templateUrl].status = 'loaded';
-                    thram.storage.set('template:' + templateUrl, res);
-                    var done = 0;
-                    _pool[templateUrl].queue.forEach(function (template) {
-                        template.success && template.success(res, template.container);
-                        done++;
-                        if (done === _pool[templateUrl].queue.length) {
-                            _pool[templateUrl].queue = [];
-                        }
-                    });
+                return $t("<div>").load({
+                    url: templateUrl,
+                    success: function (res) {
+                        _pool[templateUrl].status = 'loaded';
+                        thram.storage.set('template:' + templateUrl, res);
+                        var done = 0;
+                        _pool[templateUrl].queue.forEach(function (template) {
+                            template.success && template.success(res, template.container);
+                            done++;
+                            if (done === _pool[templateUrl].queue.length) {
+                                _pool[templateUrl].queue = [];
+                            }
+                        });
 
-                    return success && success(res, container);
-                }, error);
+                        return success && success(res, container);
+                    },
+                    error: error
+                });
             case 'loading':
                 _pool[templateUrl].queue.push({success: success, error: error, container: container});
                 break;
@@ -41,9 +45,9 @@ thram.templates = (function () {
 
     }
 
-    function _processMarkup(template, data) {
-        console.log('process markup!');
-        if (template) {
+    function _processMarkup($template, data) {
+        if ($template) {
+            var template = $template.html();
             data = data || {};
             var re = /\{\{(.+?)}}/g,
                 reExp = /(^( )?(var|if|for|else|switch|case|break|{|}|;))(.*)?/g,
@@ -81,18 +85,18 @@ thram.templates = (function () {
                 var thramData = container.data('thram-data');
                 var _data = thram.toolbox.isString(thramData) ? eval("(" + thramData + ")") : thramData;
                 container.data('thram-data', options.data || _data);
-                _loader(template, container, function (res, el) {
-                    var data = el.data('thram-data');
+                _loader(template, container, function (res, $el) {
+                    var data = $el.data('thram-data');
                     var html = _processMarkup(res, data);
-                    el.removeData('thram-data');
-                    el.html(html);
-                    var components = el.find('[data-thram-component]');
+                    $el.remove('data', 'thram-data');
+                    $el.html(html);
+                    var components = $el.find('[data-thram-component]');
                     if (components.size() > 0) {
                         components.each(function () {
-                            thram.components.render($t(this));
+                            thram.render.component(components.data('thram-component'), data);
                         });
                     }
-                    options.success && options.success(res, el);
+                    options.success && options.success(res, $el);
                 });
             } else {
                 _processMarkup(template, options.data);

@@ -12,6 +12,11 @@ thram.exceptions = {
         name: "Missing id",
         message: "You need at least the ID."
     },
+    'missing_argument': {
+        code: 'missing-argument',
+        name: "Missing argument",
+        message: "This method needs arguments, please check the documentation."
+    },
     'missing_key': {
         code: 'missing-key',
         name: "Missing key",

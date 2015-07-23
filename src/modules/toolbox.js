@@ -23,7 +23,7 @@ thram.toolbox = (function () {
     };
 
     _ToolBoxApi.isUndefined = function (obj) {
-        return $t.isType(obj, 'undefined');
+        return _ToolBoxApi.isType(obj, 'undefined');
     };
 
     _ToolBoxApi.isNull = function (obj) {

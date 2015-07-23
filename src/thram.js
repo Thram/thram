@@ -1,4 +1,4 @@
-/** tetas
+/**
  * ThramJS
  *
  * Micro front-end framework
@@ -25,37 +25,72 @@
         _el = thram.toolbox.isDOMElement(selector) ? selector : (/<[a-z][\s\S]*>/i.test(selector)) ? _create(selector) : _query(selector);
 
         _DOMApi.element = _el;
-        _DOMApi.data = function () {
-            if (arguments) {
-                var key = thram.toolbox.toCamelCase(arguments[0].split('-').join(' '));
-                return arguments.length == 1 ? _el.dataset[key] : _el.dataset[key] = arguments[1];
+        _DOMApi.remove = function () {
+            if (arguments[0]) {
+                if (arguments[1]) {
+                    var key = thram.toolbox.toCamelCase(arguments[1].split('-').join(' '));
+                    switch (arguments[0]) {
+                        case 'data':
+                            delete _el.dataset[key];
+                            break;
+                        case 'prop':
+                            delete _el[key];
+                            break;
+                        case 'attr':
+                            _el.removeAttribute(key);
+                            break;
+                        case 'css':
+                            delete _el.style[key];
+                            break;
+                    }
+                    return _DOMApi;
+                }
+                throw thram.exceptions.missing_argument;
+            } else {
+                _el.parentElement.removeChild(_el);
             }
-            throw thram.exceptions.missing_key
         };
-        _DOMApi.prop = function () {
-            if (arguments) {
+
+        _DOMApi.data = function () {
+            if (arguments[0]) {
                 var key = thram.toolbox.toCamelCase(arguments[0].split('-').join(' '));
-                return arguments.length == 1 ? _el[key] : _el[key] = arguments[1];
+                return arguments[1] ? _el.dataset[key] = arguments[1] : _el.dataset[key];
             }
-            throw thram.exceptions.missing_key
+            throw thram.exceptions.missing_key;
+        };
+
+        _DOMApi.prop = function () {
+            if (arguments[0]) {
+                var key = thram.toolbox.toCamelCase(arguments[0].split('-').join(' '));
+                return arguments[1] ? _el[key] = arguments[1] : _el[key];
+            }
+            throw thram.exceptions.missing_key;
         };
         _DOMApi.attr = function () {
-            if (arguments) {
-                return arguments.length == 1 ? _el.getAttribute(arguments[0]) : _el.setAttribute(arguments[0], arguments[1]);
+            if (arguments[0]) {
+                return arguments[1] ? _el.setAttribute(arguments[0], arguments[1]) : _el.getAttribute(arguments[0]);
             }
-            throw thram.exceptions.missing_key
+            throw thram.exceptions.missing_key;
         };
         _DOMApi.css = function () {
-            if (arguments) {
+            if (arguments[0]) {
                 var key = thram.toolbox.toCamelCase(arguments[0].split('-').join(' '));
-                return arguments.length == 1 ? _el.style[key] : _el.style[key] = arguments[1];
+                return arguments[1] ? _el.style[key] = arguments[1] : _el.style[key];
             }
-            throw thram.exceptions.missing_key
+            throw thram.exceptions.missing_key;
         };
 
         _DOMApi.append = function () {
-            _el.innerHTML += thram.toolbox.isString(arguments[0]) ? arguments[0] : arguments[0].element.innerHTML;
+            if (arguments[0])
+                _el.innerHTML += thram.toolbox.isString(arguments[0]) ? arguments[0] : arguments[0].element.innerHTML;
             return _DOMApi;
+        };
+
+        _DOMApi.size = function () {
+            return _el.length;
+        };
+        _DOMApi.html = function () {
+            return arguments[0] ? (_el.innerHTML = thram.toolbox.isString(arguments[0]) ? arguments[0] : arguments[0].element.innerHTML) : _el.innerHTML;
         };
 
         _DOMApi.after = function () {
@@ -108,9 +143,22 @@
             }
 
         };
+        _DOMApi.load = function () {
+            var options = arguments[0] || {};
+            var success = options.success;
+            options.type = 'html';
+            options.success = function (res) {
+                var html = $t(res);
+                _DOMApi.append(html);
+                success && success(html);
+            };
+            thram.ajax.get(options);
+        };
 
         return _DOMApi;
     };
+
+    // Core
 
 
     /**
@@ -133,8 +181,6 @@
             loaded ? setTimeout(fn, 0) : fns.push(fn);
         };
     }
-
-    // Core
 
     var _views = {}, _components = {}, _models = {};
 
@@ -238,6 +284,7 @@
             var v = _views[id]();
             options = options || {};
             options.async = false;
+            var success = options.success;
 
             function _initView() {
                 var base = thram.get.view('base');
@@ -245,7 +292,7 @@
                 thram.views.current = id;
                 v.controller(options.data);
                 thram.views.enter();
-                options.success && options.success(v);
+                success && success(v);
             }
 
             if (thram.router.clientSideRouting) {
@@ -301,6 +348,7 @@
             component: component
         };
     })();
+
 
     thram.start = (function () {
         _ready()(function () {

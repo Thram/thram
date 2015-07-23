@@ -41,10 +41,11 @@ thram.router = (function () {
                         }
                     }
 
-                    // Validation to restrict the access to the route
+                    var view = thram.toolbox.isString(route.view) ? {id: route.view} : route.view
 
+                    // Validation to restrict the access to the route
                     route.validate ?
-                        (route.validate.validation() ? thram.render.view(route.view, params) : route.validate.onValidationFail())
+                        (route.validate.validation() ? thram.render.view(view.id, view.data) : route.validate.onValidationFail())
                         : thram.render.view(route.view, params);
 
                     throw BreakException;
