@@ -7,9 +7,29 @@ var gulp = require('gulp'),
     uglify = require('gulp-uglify'),
     jshint = require('gulp-jshint'),
     serve = require('gulp-serve'),
+    compass = require('gulp-compass'),
+    notify = require('gulp-notify'),
+    livereload = require('gulp-livereload'),
+    plumber = require('gulp-plumber'),
     gzip = require('gulp-gzip'),
-    del = require('del');
+    del = require('del'),
+    path = require('path');
 
+
+//the title and icon that will be used for the Grunt notifications
+var notifyInfo = {
+    title: 'Gulp',
+    icon: path.join(__dirname, 'gulp.png')
+};
+
+//error notification settings for plumber
+var plumberErrorHandler = {
+    errorHandler: notify.onError({
+        title: notifyInfo.title,
+        icon: notifyInfo.icon,
+        message: "Error: <%= error.message %>"
+    })
+};
 
 gulp.task('clean', function (cb) {
     del(['dist/*'], cb);
@@ -48,7 +68,19 @@ gulp.task('fonts', function () {
 });
 
 gulp.task('sass:watch', function () {
-    gulp.watch(['src/stylesheets/thram.scss', 'src/stylesheets/**/*.scss'], ['sass']);
+    gulp.watch(['src/stylesheets/thram.scss', 'src/stylesheets/**/*.scss'], ['styles']);
+});
+
+
+//styles
+gulp.task('styles', function () {
+    return gulp.src(['src/stylesheets/thram.scss'])
+        .pipe(plumber(plumberErrorHandler))
+        .pipe(compass({
+            sass: 'src/stylesheets',
+            image: 'src/images'
+        }))
+        .pipe(gulp.dest('example'));
 });
 
 gulp.task('watch', function () {
@@ -58,4 +90,4 @@ gulp.task('watch', function () {
 gulp.task('serve', serve(['example']));
 
 gulp.task('dist', ['clean', 'lint', 'build']);
-gulp.task('server', ['clean', 'lint', 'sass', 'fonts', 'build', 'serve', 'watch', 'sass:watch']);
+gulp.task('server', ['clean', 'lint', 'styles', 'fonts', 'build', 'serve', 'watch', 'sass:watch']);
