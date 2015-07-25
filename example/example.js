@@ -3,7 +3,6 @@
  */
 
 // Define your routes
-thram.router = 'thram-js';
 thram.routes = [
     {route: '/', view: 'example-view'},
     {route: '/:app_namespace', view: {id: 'example-view-2', data: {title: 'Details!'}}}

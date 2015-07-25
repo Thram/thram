@@ -544,6 +544,7 @@ thram.ajax = (function () {
 /**
  * Created by thram on 26/07/15.
  */
+//TODO implement http://greensock.com
 thram.animation = (function () {
     var _AnimationApi = {};
 
@@ -1258,13 +1259,17 @@ thram.views = (function () {
     _ViewsApi.leave = function (event, func, reset) {
     };
     _ViewsApi.scrollTo = function (selector, callback) {
-        //    var target = $t(selector);
-        //    // Smooth Scrolling
-        //    if (target.length) {
-        //        $t('html,body').animate({
-        //            scrollTop: target.offset().top
-        //        }, 500, callback);
-        //    }
+        //function scrollTo(element, to, duration) {
+        //    if (duration < 0) return;
+        //    var difference = to - element.scrollTop;
+        //    var perTick = difference / duration * 10;
+        //
+        //    setTimeout(function() {
+        //        element.scrollTop = element.scrollTop + perTick;
+        //        if (element.scrollTop === to) return;
+        //        scrollTo(element, to, duration - 10);
+        //    }, 10);
+        //}
     };
 
     window.onbeforeunload = _ViewsApi.leave;
