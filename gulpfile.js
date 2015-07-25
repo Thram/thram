@@ -17,13 +17,13 @@ gulp.task('clean', function (cb) {
 
 // Lint Task
 gulp.task('lint', function () {
-    return gulp.src(['src/thram.js', 'src/modules/*.js'])
+    return gulp.src(['src/scripts/thram.js', 'src/scripts/**/*.js'])
         .pipe(jshint({expr: true}))
         .pipe(jshint.reporter('jshint-stylish'));
 });
 
 gulp.task('build', function () {
-    return gulp.src(['src/thram.js', 'src/modules/*.js'])
+    return gulp.src(['src/scripts/thram.js', 'src/scripts/**/*.js'])
         .pipe(concat('thram.js'))
         .pipe(gulp.dest('dist'))
         .pipe(gulp.dest('example'))
@@ -33,17 +33,29 @@ gulp.task('build', function () {
         .pipe(gulp.dest('dist'));
 });
 
-gulp.task('compress', function () {
-    gulp.src('./dev/scripts/*.js')
-        .pipe(gzip())
-        .pipe(gulp.dest('./public/scripts'));
+var sass = require('gulp-sass');
+
+gulp.task('sass', function () {
+    gulp.src('src/stylesheets/thram.scss')
+        .pipe(sass().on('error', sass.logError))
+        .pipe(gulp.dest('dist'))
+        .pipe(gulp.dest('example'));
+});
+gulp.task('fonts', function () {
+    gulp.src('src/stylesheets/fonts/*')
+        .pipe(gulp.dest('dist/fonts'))
+        .pipe(gulp.dest('example/fonts'));
+});
+
+gulp.task('sass:watch', function () {
+    gulp.watch(['src/stylesheets/thram.scss', 'src/stylesheets/**/*.scss'], ['sass']);
 });
 
 gulp.task('watch', function () {
-    gulp.watch(['src/*.js', 'src/**/*.js'], ['dist']);
+    gulp.watch(['src/scripts/thram.js', 'src/scripts/**/*.js'], ['dist']);
 });
 
 gulp.task('serve', serve(['example']));
 
 gulp.task('dist', ['clean', 'lint', 'build']);
-gulp.task('server', ['clean', 'lint', 'build', 'serve', 'watch']);
+gulp.task('server', ['clean', 'lint', 'sass', 'fonts', 'build', 'serve', 'watch', 'sass:watch']);

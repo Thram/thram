@@ -22,9 +22,8 @@
             return elements.length === 1 ? elements[0] : elements;
         }
 
-        _el = thram.toolbox.isDOMElement(selector) ? selector : (/<[a-z][\s\S]*>/i.test(selector)) ? _create(selector) : _query(selector);
+        _el = thram.toolbox.isDOMElement(selector) ? selector : (/<[a-z][\s\S]*>/i.test(selector)) ? _create(selector) : _query(selector, arguments[1]);
 
-        _DOMApi.element = _el;
         _DOMApi.remove = function () {
             if (arguments[0]) {
                 if (arguments[1]) {
@@ -135,6 +134,15 @@
             _el.classList.toggle(arguments[0]);
             return _DOMApi;
         };
+        _DOMApi.each = function () {
+            var callback = arguments[0];
+            if (thram.toolbox.isNodeList(_el)) {
+                thram.toolbox.iterate(_el, function () {
+                    callback = callback.bind($t(this));
+                    callback($t(this));
+                });
+            }
+        };
         _DOMApi.render = function () {
             if (arguments) {
                 var options = arguments[1] || {};
@@ -155,11 +163,11 @@
             thram.ajax.get(options);
         };
 
+        _DOMApi.element = _el;
         return _DOMApi;
     };
 
     // Core
-
 
     /**
      * DOM Ready
@@ -313,20 +321,22 @@
             (!thram.router.clientSideRouting || !options.async) && _initView();
         }
 
-        function component(id, options) {
+        function component(options) {
             // You need the Template Module to render the modules
             if (!thram.templates) throw thram.exceptions.missing_module;
 
-            var c = _components[id];
             options = options || {};
+            var id = options.container.data('thram-component');
+            var c = _components[id]();
             options.async = false;
+            var success = options.success;
 
             function _initComponent() {
                 if (c.controller) {
                     c.controller(options.data);
                 }
-                thram.events.trigger('component:render:finished');
-                options.success && options.success(c);
+                thram.event.trigger('component:render:finished');
+                success && success(c);
             }
 
             var template = c.template;
@@ -354,6 +364,12 @@
         _ready()(function () {
             thram.views.enter();
             thram.router.process();
+            if (thram.router.clientSideRouting) {
+                window.addEventListener("hashchange", function (e) {
+                    thram.views.leave(thram.views.current);
+                    thram.router.process();
+                }, false);
+            }
         });
     });
     window.thram = thram;
@@ -365,22 +381,20 @@
  */
 thram.ajax = (function () {
     var _AjaxApi = {
-        credentials: false
+        cors: false
     };
 
     function _new() {
         var XMLHTTP_IDS, xmlhttp, success = false, i;
-        // Mozilla/Chrome/Safari/IE7+ (normal browsers)
         try {
-            // For cross-origin requests, some simple logic
-            // to determine if XDomainReqeust is needed.
-            if (thram.toolbox.isUndefined(new XMLHttpRequest().withCredentials)) {
+            // Mozilla/Chrome/Safari/IE7+ (normal browsers)
+            xmlhttp = new XMLHttpRequest();
+            // For cross-origin requests, some simple logic to determine if XDomainReqeust is needed.
+            if (thram.toolbox.isUndefined(xmlhttp.withCredentials)) {
                 xmlhttp = new XDomainRequest();
-            } else {
-                xmlhttp = new XMLHttpRequest();
             }
         } catch (e1) {
-            // IE(?!)
+            // Internet Explorer
             XMLHTTP_IDS = ['MSXML2.XMLHTTP.5.0', 'MSXML2.XMLHTTP.4.0', 'MSXML2.XMLHTTP.3.0', 'MSXML2.XMLHTTP', 'Microsoft.XMLHTTP'];
             for (i = 0; i < XMLHTTP_IDS.length && !success; i++) {
                 try {
@@ -424,7 +438,6 @@ thram.ajax = (function () {
                         case 'jsonp':
                             _jsonp(options);
                             return;
-                            break;
                         case 'json':
                             contentType = 'application/json';
                             var success = options.success;
@@ -442,7 +455,7 @@ thram.ajax = (function () {
                     options.headers['Content-Type'] = contentType + '; charset=UTF-8';
                 }
 
-                request.withCredentials = options.credentials || _AjaxApi.credentials;
+                request.withCredentials = options.cors || _AjaxApi.cors;
                 request.open(options.method, encodeURI(options.url), true);
                 for (var header in options.headers) {
                     options.headers.hasOwnProperty(header) && request.setRequestHeader(header, options.headers[header]);
@@ -527,6 +540,14 @@ thram.ajax = (function () {
     };
 
     return _AjaxApi;
+})();
+/**
+ * Created by thram on 26/07/15.
+ */
+thram.animation = (function () {
+    var _AnimationApi = {};
+
+    return _AnimationApi;
 })();
 /**
  * Created by thram on 20/07/15.
@@ -675,6 +696,11 @@ thram.exceptions = {
         name: "Missing argument",
         message: "This method needs arguments, please check the documentation."
     },
+    'wrong_type_arguments': {
+        code: 'wrong-type-arguments',
+        name: "Wrong type arguments",
+        message: "The arguments don't math with any valid combination,  please check the documentation."
+    },
     'missing_key': {
         code: 'missing-key',
         name: "Missing key",
@@ -694,6 +720,11 @@ thram.exceptions = {
         code: 'component-not-valid',
         name: "Component format not valid",
         message: "The Component Object must have a 'template' or 'templateURL' attached."
+    },
+    'no_view': {
+        code: 'no-view',
+        name: "No View attached",
+        message: "There is no View attached to the route. Please add one. Ex.: thram.router.register('/', {view: 'viewId' }"
     }
 };
 /**
@@ -739,12 +770,12 @@ thram.router = (function () {
                         }
                     }
 
-                    var view = thram.toolbox.isString(route.view) ? {id: route.view} : route.view
+                    var view = thram.toolbox.isString(route.view) ? {id: route.view} : route.view;
 
                     // Validation to restrict the access to the route
                     route.validate ?
                         (route.validate.validation() ? thram.render.view(view.id, view.data) : route.validate.onValidationFail())
-                        : thram.render.view(route.view, params);
+                        : thram.render.view(view.id, view.data);
 
                     throw BreakException;
                 }
@@ -755,11 +786,7 @@ thram.router = (function () {
     }
 
     function register(route, options) {
-        if (!options.view) throw {
-            code: 'no-view',
-            name: "No View attached",
-            message: "There is no View attached to the route. Please add one. Ex.: thram.router.register('/', {view: 'viewId' }"
-        };
+        if (!options.view) throw thram.exceptions.no_view;
         _routes[route] = options;
     }
 
@@ -982,10 +1009,17 @@ thram.templates = (function () {
 
     var _pool = {};
 
+    function _getData(element) {
+        var thramData = element.data('thram-data');
+        return thram.toolbox.isString(thramData) ? eval("(" + thramData + ")") : thramData;
+    }
+
     //function process(id, data) {
     //  var html = document.querySelector('script#' + id + '[type=template]').innerHTML;
     function _loader(templateUrl, container, success, error) {
         _pool[templateUrl] = _pool[templateUrl] || {status: 'pending', queue: []};
+        var html = thram.storage.get('template:' + templateUrl);
+        if (html)   _pool[templateUrl].status = 'loaded';
         switch (_pool[templateUrl].status) {
             case 'pending':
                 _pool[templateUrl].status = 'loading';
@@ -993,17 +1027,17 @@ thram.templates = (function () {
                     url: templateUrl,
                     success: function (res) {
                         _pool[templateUrl].status = 'loaded';
-                        thram.storage.set('template:' + templateUrl, res);
+                        thram.storage.set('template:' + templateUrl, res.html());
                         var done = 0;
                         _pool[templateUrl].queue.forEach(function (template) {
-                            template.success && template.success(res, template.container);
+                            template.success && template.success(res.html(), template.container);
                             done++;
                             if (done === _pool[templateUrl].queue.length) {
                                 _pool[templateUrl].queue = [];
                             }
                         });
 
-                        return success && success(res, container);
+                        return success && success(res.html(), container);
                     },
                     error: error
                 });
@@ -1011,20 +1045,15 @@ thram.templates = (function () {
                 _pool[templateUrl].queue.push({success: success, error: error, container: container});
                 break;
             case 'loaded':
-                var html = thram.storage.get('template:' + templateUrl);
-                if (html) {
-                    _pool[templateUrl].status = 'loaded';
-                    return success && success(html, container);
-                }
-                break;
+                return success && success(html, container);
         }
 
 
     }
 
-    function _processMarkup($template, data) {
-        if ($template) {
-            var template = $template.html();
+    function _processMarkup(template, data) {
+        // Based on the article by Krasimir: http://krasimirtsonev.com/blog/article/Javascript-template-engine-in-just-20-line;
+        if (template) {
             data = data || {};
             var re = /\{\{(.+?)}}/g,
                 reExp = /(^( )?(var|if|for|else|switch|case|break|{|}|;))(.*)?/g,
@@ -1059,20 +1088,16 @@ thram.templates = (function () {
         try {
             if (options.async) {
                 var container = options.container || $t('[data-thram-view]');
-                var thramData = container.data('thram-data');
-                var _data = thram.toolbox.isString(thramData) ? eval("(" + thramData + ")") : thramData;
-                container.data('thram-data', options.data || _data);
+                container.data('thram-data', JSON.stringify(options.data || _getData(container)));
                 _loader(template, container, function (res, $el) {
-                    var data = $el.data('thram-data');
+                    var data = _getData($el);
                     var html = _processMarkup(res, data);
                     $el.remove('data', 'thram-data');
                     $el.html(html);
                     var components = $el.find('[data-thram-component]');
-                    if (components.size() > 0) {
-                        components.each(function () {
-                            thram.render.component(components.data('thram-component'), data);
-                        });
-                    }
+                    components.each(function (component) {
+                        thram.render.component({container: component, data: _getData(component)});
+                    });
                     options.success && options.success(res, $el);
                 });
             } else {
@@ -1141,6 +1166,54 @@ thram.toolbox = (function () {
 
     _ToolBoxApi.isFunction = function (obj) {
         return _ToolBoxApi.isType(obj, 'function');
+    };
+    _ToolBoxApi.isArray = function (obj) {
+        return _ToolBoxApi.isType(obj, 'array');
+    };
+
+    _ToolBoxApi.isNodeList = function (obj) {
+        return _ToolBoxApi.isType(obj, 'nodelist');
+    };
+
+    function _resolve() {
+        var _callback = arguments[0], _el = arguments[1];
+        if (_callback) {
+            _callback = _callback.bind(_el);
+            _callback(_el);
+        }
+    }
+
+    _ToolBoxApi.iterate = function () {
+        var collection = arguments[0], callback = arguments[1];
+        if (_ToolBoxApi.isArray(collection) || _ToolBoxApi.isNodeList(collection)) {
+            for (var i = 0, len = collection.length; i < len; i++) {
+                _resolve(callback, collection[i]);
+            }
+        } else {
+            throw thram.exceptions.wrong_type_arguments;
+        }
+    };
+
+    _ToolBoxApi.each = function () {
+        var collection = arguments[0], callback = arguments[1];
+        if (_ToolBoxApi.isObject(collection)) {
+            for (var element in collection) {
+                if (collection.hasOwnProperty(element)) {
+                    _resolve(callback, element);
+                }
+            }
+        } else {
+            throw thram.exceptions.wrong_type_arguments;
+        }
+    };
+
+    _ToolBoxApi.clone = function (obj) {
+        if (null === obj || "object" != typeof obj) return obj;
+        var copy = obj.constructor();
+        for (var attr in obj) {
+            if (obj.hasOwnProperty(attr)) copy[attr] = obj[attr];
+        }
+        return copy;
     };
     // convert any string to camelCase
     _ToolBoxApi.toCamelCase = function (str) {

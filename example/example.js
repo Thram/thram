@@ -5,7 +5,7 @@
 // Define your routes
 thram.routes = [
     {route: '/', view: 'example-view'},
-    {route: '/:app_namespace', view: {id: 'example-view', data: {title: 'Details!'}}}
+    {route: '/:app_namespace', view: {id: 'example-view-2', data: {title: 'Details!'}}}
 ];
 
 // Define your views
