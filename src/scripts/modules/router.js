@@ -18,7 +18,7 @@ thram.router = (function () {
             thram.routes.forEach(function (route) {
                 var routeMatcher = new RegExp(route.route.replace(/:[^\s/]+/g, '([\\w-]+)'));
                 var url = window.location.pathname;
-                if (thram.templates && window.location.hash !== '') {
+                if (thram.router.clientSideRouting) {
                     var hash = window.location.hash;
                     if (hash.indexOf('#/') === 0) {
                         url = hash.substr(hash.indexOf('#') + 1);
