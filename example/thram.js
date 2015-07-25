@@ -749,11 +749,13 @@ thram.router = (function () {
                 var routeMatcher = new RegExp(route.route.replace(/:[^\s/]+/g, '([\\w-]+)'));
                 var url = window.location.pathname;
                 if (thram.router.clientSideRouting) {
-                    url = window.location.hash;
-                    if (url.indexOf('#/') === 0) {
-                        url = url.substr(url.indexOf('#') + 1);
-                    } else {
-                        thram.views.scrollTo(url);
+                    url = window.location.hash || '/';
+                    if (url.indexOf('#') === 0) {
+                        if (url.indexOf('#/') === 0) {
+                            url = url.substr(url.indexOf('#') + 1);
+                        } else {
+                            thram.views.scrollTo(url);
+                        }
                     }
                 }
 
