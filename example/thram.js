@@ -747,7 +747,7 @@ thram.router = (function () {
             thram.routes.forEach(function (route) {
                 var routeMatcher = new RegExp(route.route.replace(/:[^\s/]+/g, '([\\w-]+)'));
                 var url = window.location.pathname;
-                if (thram.templates && window.location.hash !== '') {
+                if (thram.router.clientSideRouting) {
                     var hash = window.location.hash;
                     if (hash.indexOf('#/') === 0) {
                         url = hash.substr(hash.indexOf('#') + 1);
@@ -1257,15 +1257,15 @@ thram.views = (function () {
     };
     _ViewsApi.leave = function (event, func, reset) {
     };
-    //_ViewsApi.scrollTo = function (selector, callback) {
-    //    var target = $t(selector);
-    //    // Smooth Scrolling
-    //    if (target.length) {
-    //        $t('html,body').animate({
-    //            scrollTop: target.offset().top
-    //        }, 500, callback);
-    //    }
-    //};
+    _ViewsApi.scrollTo = function (selector, callback) {
+        //    var target = $t(selector);
+        //    // Smooth Scrolling
+        //    if (target.length) {
+        //        $t('html,body').animate({
+        //            scrollTop: target.offset().top
+        //        }, 500, callback);
+        //    }
+    };
 
     window.onbeforeunload = _ViewsApi.leave;
 
