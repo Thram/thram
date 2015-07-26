@@ -59,19 +59,11 @@ thram.toolbox = (function () {
         return _ToolBoxApi.isType(obj, 'nodelist');
     };
 
-    function _resolve() {
-        var _callback = arguments[0], _el = arguments[1];
-        if (_callback) {
-            _callback = _callback.bind(_el);
-            _callback(_el);
-        }
-    }
-
     _ToolBoxApi.iterate = function () {
         var collection = arguments[0], callback = arguments[1];
         if (_ToolBoxApi.isArray(collection) || _ToolBoxApi.isNodeList(collection)) {
             for (var i = 0, len = collection.length; i < len; i++) {
-                _resolve(callback, collection[i]);
+                thram._resolve(callback, collection[i]);
             }
         } else {
             throw thram.exceptions.wrong_type_arguments;
@@ -83,7 +75,7 @@ thram.toolbox = (function () {
         if (_ToolBoxApi.isObject(collection)) {
             for (var element in collection) {
                 if (collection.hasOwnProperty(element)) {
-                    _resolve(callback, element);
+                    thram._resolve(callback, element);
                 }
             }
         } else {

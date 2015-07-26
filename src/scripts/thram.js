@@ -89,7 +89,7 @@
             return _el.length;
         };
         _DOMApi.html = function () {
-            return arguments[0] ? (_el.innerHTML = thram.toolbox.isString(arguments[0]) ? arguments[0] : arguments[0].element.innerHTML) : _el.innerHTML;
+            return arguments[0] ? (_el.innerHTML = thram.toolbox.isString(arguments[0]) ? arguments[0] : arguments[0].element.parentNode.innerHTML) : _el.parentNode.innerHTML;
         };
 
         _DOMApi.after = function () {
@@ -158,7 +158,7 @@
             options.success = function (res) {
                 var html = $t(res);
                 _DOMApi.append(html);
-                success && success(html);
+                thram._resolve(success, _DOMApi, html);
             };
             thram.ajax.get(options);
         };
@@ -359,6 +359,14 @@
         };
     })();
 
+
+    thram._resolve = function () {
+        var _callback = arguments[0], _el = arguments[1], args = arguments[2] || arguments[1] || {};
+        if (_callback) {
+            _callback = _callback.bind(_el);
+            _callback(args);
+        }
+    };
 
     thram.start = (function () {
         _ready()(function () {

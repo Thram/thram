@@ -11,5 +11,8 @@
     "thram",
     "thramjs"
   ],
-  "license": "MIT"
+  "license": "MIT",
+  "dependencies": {
+    "susy": "~2.2.5"
+  }
 }

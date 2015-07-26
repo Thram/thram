@@ -13,6 +13,7 @@ var gulp = require('gulp'),
     plumber = require('gulp-plumber'),
     gzip = require('gulp-gzip'),
     del = require('del'),
+    sync = require('gulp-sync')(gulp),
     path = require('path');
 
 
@@ -45,8 +46,8 @@ gulp.task('lint', function () {
 gulp.task('build', function () {
     return gulp.src(['src/scripts/thram.js', 'src/scripts/**/*.js'])
         .pipe(concat('thram.js'))
-        .pipe(gulp.dest('dist'))
-        .pipe(gulp.dest('example'))
+        .pipe(gulp.dest('dist/js'))
+        .pipe(gulp.dest('example/js'))
         .pipe(rename('thram.min.js'))
         .pipe(uglify())
         //.pipe(gzip({append:false}))
@@ -55,39 +56,32 @@ gulp.task('build', function () {
 
 var sass = require('gulp-sass');
 
-gulp.task('sass', function () {
-    gulp.src('src/stylesheets/thram.scss')
-        .pipe(sass().on('error', sass.logError))
-        .pipe(gulp.dest('dist'))
-        .pipe(gulp.dest('example'));
-});
 gulp.task('fonts', function () {
     gulp.src('src/stylesheets/fonts/*')
         .pipe(gulp.dest('dist/fonts'))
         .pipe(gulp.dest('example/fonts'));
 });
 
-gulp.task('sass:watch', function () {
-    gulp.watch(['src/stylesheets/thram.scss', 'src/stylesheets/**/*.scss'], ['styles']);
-});
-
-
 //styles
 gulp.task('styles', function () {
-    return gulp.src(['src/stylesheets/thram.scss'])
+    return gulp.src(['src/stylesheets/playground.scss'])
         .pipe(plumber(plumberErrorHandler))
         .pipe(compass({
             sass: 'src/stylesheets',
             image: 'src/images'
         }))
-        .pipe(gulp.dest('example'));
+        .pipe(gulp.dest('example/css'));
+});
+
+gulp.task('styles:watch', function () {
+    gulp.watch(['src/stylesheets/playground.scss', 'src/stylesheets/**/*.scss'], ['styles']);
 });
 
 gulp.task('watch', function () {
-    gulp.watch(['src/scripts/thram.js', 'src/scripts/**/*.js'], ['dist']);
+    gulp.watch(['src/scripts/thram.js', 'src/scripts/**/*.js'], ['dist/js']);
 });
 
 gulp.task('serve', serve(['example']));
 
-gulp.task('dist', ['clean', 'lint', 'build']);
-gulp.task('server', ['clean', 'lint', 'styles', 'fonts', 'build', 'serve', 'watch', 'sass:watch']);
+gulp.task('dist', sync.sync(['clean', ['lint', 'build']]));
+gulp.task('server', sync.sync(['clean', ['lint', 'styles', 'fonts', 'build', 'serve', 'watch', 'styles:watch']]));

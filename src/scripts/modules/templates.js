@@ -3,6 +3,8 @@
  */
 thram.templates = (function () {
 
+    var _TemplatesApi = {};
+
     var _pool = {};
 
     function _getData(element) {
@@ -14,7 +16,7 @@ thram.templates = (function () {
     //  var html = document.querySelector('script#' + id + '[type=template]').innerHTML;
     function _loader(templateUrl, container, success, error) {
         _pool[templateUrl] = _pool[templateUrl] || {status: 'pending', queue: []};
-        var html = thram.storage.get('template:' + templateUrl);
+        var html = _TemplatesApi.cacheEnabled ? thram.storage.get('template:' + templateUrl) : undefined;
         if (html)   _pool[templateUrl].status = 'loaded';
         switch (_pool[templateUrl].status) {
             case 'pending':
@@ -80,7 +82,7 @@ thram.templates = (function () {
 
     }
 
-    function process(template, options) {
+    _TemplatesApi.process = function (template, options) {
         try {
             if (options.async) {
                 var container = options.container || $t('[data-thram-view]');
@@ -100,13 +102,14 @@ thram.templates = (function () {
                 _processMarkup(template, options.data);
             }
         } catch (e) {
+            e.template = template;
             console.error(e);
             options.error && options.error(e);
         }
 
-    }
-
-    return {
-        process: process
     };
+
+    _TemplatesApi.cacheEnabled = false;
+
+    return _TemplatesApi;
 })();
