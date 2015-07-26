@@ -42,6 +42,9 @@
 /* Gutters */
 .block {
   padding: 4px;
+  &.stretch {
+    padding: 0;
+  }
 }
 
 /* Nested grid */

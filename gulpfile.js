@@ -51,7 +51,7 @@ gulp.task('build', function () {
         .pipe(rename('thram.min.js'))
         .pipe(uglify())
         //.pipe(gzip({append:false}))
-        .pipe(gulp.dest('dist'));
+        .pipe(gulp.dest('dist/js'));
 });
 
 var sass = require('gulp-sass');

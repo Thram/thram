@@ -1,8 +1,22 @@
 @import url(http://fonts.googleapis.com/css?family=Inconsolata:400,700&subset=latin,latin-ext);
 @import url(http://fonts.googleapis.com/css?family=Titillium+Web:700italic,600,700,600italic);
 
+$xx-large: 2.2em;
+$x-large: 2em;
+$large: 1.8em;
+$medium: 1.6em;
+$small: 1.4em;
+$x-small: 1.2em;
+$xx-small: 1em;
+
 * {
   font-family: "Inconsolata", "Courier New", Courier, "Lucida Sans Typewriter", "Lucida Typewriter", monospace;
+}
+
+h1, h2, h3, h4, h5, h6, p, pre, blockquote {
+  font-style: normal;
+  font-variant: normal;
+  font-weight: 400;
 }
 
 h1, h2, h3, h4, h5, h6 {
@@ -10,41 +24,48 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 h1 {
-  font-size: 24px;
-  font-style: normal;
-  font-variant: normal;
+  font-size: $xx-large;
+  line-height: $xx-large;
   font-weight: 600;
-  line-height: 26.3999996185303px;
+}
+
+h2 {
+  font-size: $x-large;
 }
 
 h3 {
-  font-size: 14px;
-  font-style: normal;
-  font-variant: normal;
+  font-size: $large;
+  line-height: $large;
   font-weight: 600;
-  line-height: 15.3999996185303px;
+}
+
+h4 {
+  font-size: $medium;
+}
+
+h5 {
+  font-size: $small;
+}
+
+h6 {
+  font-size: $x-small;
 }
 
 p {
-  font-size: 14px;
-  font-style: normal;
-  font-variant: normal;
-  font-weight: 400;
-  line-height: 20px;
+  font-size: $small;
+  line-height: $small;
 }
 
 blockquote {
-  font-size: 21px;
-  font-style: normal;
-  font-variant: normal;
-  font-weight: 400;
-  line-height: 30px;
+  font-size: $medium;
+  line-height: $medium;
 }
 
 pre {
-  font-size: 13px;
-  font-style: normal;
-  font-variant: normal;
-  font-weight: 400;
-  line-height: 18.5714302062988px;
+  font-size: $x-small;
+  line-height: $x-small;
+}
+
+label {
+  font-size: $xx-small;
 }
