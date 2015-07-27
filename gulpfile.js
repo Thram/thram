@@ -10,6 +10,7 @@ var gulp = require('gulp'),
     compass = require('gulp-compass'),
     notify = require('gulp-notify'),
     livereload = require('gulp-livereload'),
+    fileinclude = require('gulp-file-include'),
     plumber = require('gulp-plumber'),
     gzip = require('gulp-gzip'),
     del = require('del'),
@@ -78,10 +79,18 @@ gulp.task('styles:watch', function () {
 });
 
 gulp.task('watch', function () {
-    gulp.watch(['src/scripts/thram.js', 'src/scripts/**/*.js'], ['dist/js']);
+    gulp.watch(['src/scripts/thram.js', 'src/scripts/**/*.js'], ['dist']);
+});
+
+gulp.task('templates', function () {
+    gulp.src(['src/example/index.html'])
+        .pipe(fileinclude({
+            template: '<script type="text/template" id="@filename"> @content </script>'
+        }))
+        .pipe(gulp.dest('example/'));
 });
 
 gulp.task('serve', serve(['example']));
 
 gulp.task('dist', sync.sync(['clean', ['lint', 'build']]));
-gulp.task('server', sync.sync(['clean', ['lint', 'styles', 'fonts', 'build', 'serve', 'watch', 'styles:watch']]));
+gulp.task('server', sync.sync(['clean', ['templates', 'lint', 'styles', 'fonts', 'build', 'serve', 'watch', 'styles:watch']]));

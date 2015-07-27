@@ -84,22 +84,26 @@ thram.templates = (function () {
 
     _TemplatesApi.process = function (template, options) {
         try {
+
+            function _processComponents($el, html) {
+                $el.remove('data', 'thram-data');
+                $el.html(html);
+                var components = $el.find('[data-thram-component]');
+                components.each(function (component) {
+                    thram.render.component({container: component, data: _getData(component)});
+                });
+                options.success && options.success(res, $el);
+            }
+
+            var container = options.container || $t('[data-thram-view]');
             if (options.async) {
-                var container = options.container || $t('[data-thram-view]');
                 container.data('thram-data', JSON.stringify(options.data || _getData(container)));
                 _loader(template, container, function (res, $el) {
                     var data = _getData($el);
-                    var html = _processMarkup(res, data);
-                    $el.remove('data', 'thram-data');
-                    $el.html(html);
-                    var components = $el.find('[data-thram-component]');
-                    components.each(function (component) {
-                        thram.render.component({container: component, data: _getData(component)});
-                    });
-                    options.success && options.success(res, $el);
+                    _processComponents($el, _processMarkup(res, data));
                 });
             } else {
-                _processMarkup(template, options.data);
+                _processComponents(container, _processMarkup(template, options.data));
             }
         } catch (e) {
             e.template = template;

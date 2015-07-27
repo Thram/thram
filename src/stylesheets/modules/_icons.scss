@@ -137,204 +137,57 @@ $icons: (
         "export-outline":'\e06c',
         "export":'\e06d',
         "eye-outline":'\e06e',
-        "eye":'\e06f'
+        "eye":'\e06f',
+        "feather":'\e070',
+        "film":'\e071',
+        "filter":'\e072',
+        "flag-outline":'\e073',
+        "flag":'\e074',
+        "flash-outline":'\e075',
+        "flash":'\e076',
+        "flow-children":'\e077',
+        "flow-merge":'\e078',
+        "flow-parallel":'\e079',
+        "flow-switch":'\e07a',
+        "folder-add":'\e07b',
+        "folder-delete":'\e07c',
+        "folder-open":'\e07d',
+        "folder":'\e07e',
+        "gift":'\e07f',
+        "globe-outline":'\e080',
+        "globe":'\e081',
+        "group-outline":'\e082',
+        "group":'\e083',
+        "headphones":'\e084',
+        "heart-full-outline":'\e085',
+        "heart-half-outline":'\e086',
+        "heart-outline":'\e087',
+        "heart":'\e088',
+        "home-outline":'\e089',
+        "home":'\e08a',
+        "html5":'\e08b',
+        "image-outline":'\e08c',
+        "image":'\e08d',
+        "infinity-outline":'\e08e',
+        "infinity":'\e08f',
+        "info-large-outline":'\e090',
+        "info-large":'\e091',
+        "info-outline":'\e092',
+        "info":'\e093',
+        "input-checked-outline":'\e094',
+        "input-checked":'\e095',
+        "key-outline":'\e096',
+        "key":'\e097',
+        "keyboard":'\e098',
+        "leaf":'\e099',
+        "lightbulb":'\e09a',
+        "link-outline":'\e09b',
+        "link":'\e09c',
+        "location-arrow-outline":'\e09d',
+        "location-arrow":'\e09e',
+        "location-outline":'\e09f',
+        "location":'\e0a0',
 );
-
-.typcn-feather:before {
-  content: '\e070'; /* '' */
-}
-
-.typcn-film:before {
-  content: '\e071'; /* '' */
-}
-
-.typcn-filter:before {
-  content: '\e072'; /* '' */
-}
-
-.typcn-flag-outline:before {
-  content: '\e073'; /* '' */
-}
-
-.typcn-flag:before {
-  content: '\e074'; /* '' */
-}
-
-.typcn-flash-outline:before {
-  content: '\e075'; /* '' */
-}
-
-.typcn-flash:before {
-  content: '\e076'; /* '' */
-}
-
-.typcn-flow-children:before {
-  content: '\e077'; /* '' */
-}
-
-.typcn-flow-merge:before {
-  content: '\e078'; /* '' */
-}
-
-.typcn-flow-parallel:before {
-  content: '\e079'; /* '' */
-}
-
-.typcn-flow-switch:before {
-  content: '\e07a'; /* '' */
-}
-
-.typcn-folder-add:before {
-  content: '\e07b'; /* '' */
-}
-
-.typcn-folder-delete:before {
-  content: '\e07c'; /* '' */
-}
-
-.typcn-folder-open:before {
-  content: '\e07d'; /* '' */
-}
-
-.typcn-folder:before {
-  content: '\e07e'; /* '' */
-}
-
-.typcn-gift:before {
-  content: '\e07f'; /* '' */
-}
-
-.typcn-globe-outline:before {
-  content: '\e080'; /* '' */
-}
-
-.typcn-globe:before {
-  content: '\e081'; /* '' */
-}
-
-.typcn-group-outline:before {
-  content: '\e082'; /* '' */
-}
-
-.typcn-group:before {
-  content: '\e083'; /* '' */
-}
-
-.typcn-headphones:before {
-  content: '\e084'; /* '' */
-}
-
-.typcn-heart-full-outline:before {
-  content: '\e085'; /* '' */
-}
-
-.typcn-heart-half-outline:before {
-  content: '\e086'; /* '' */
-}
-
-.typcn-heart-outline:before {
-  content: '\e087'; /* '' */
-}
-
-.typcn-heart:before {
-  content: '\e088'; /* '' */
-}
-
-.typcn-home-outline:before {
-  content: '\e089'; /* '' */
-}
-
-.typcn-home:before {
-  content: '\e08a'; /* '' */
-}
-
-.typcn-html5:before {
-  content: '\e08b'; /* '' */
-}
-
-.typcn-image-outline:before {
-  content: '\e08c'; /* '' */
-}
-
-.typcn-image:before {
-  content: '\e08d'; /* '' */
-}
-
-.typcn-infinity-outline:before {
-  content: '\e08e'; /* '' */
-}
-
-.typcn-infinity:before {
-  content: '\e08f'; /* '' */
-}
-
-.typcn-info-large-outline:before {
-  content: '\e090'; /* '' */
-}
-
-.typcn-info-large:before {
-  content: '\e091'; /* '' */
-}
-
-.typcn-info-outline:before {
-  content: '\e092'; /* '' */
-}
-
-.typcn-info:before {
-  content: '\e093'; /* '' */
-}
-
-.typcn-input-checked-outline:before {
-  content: '\e094'; /* '' */
-}
-
-.typcn-input-checked:before {
-  content: '\e095'; /* '' */
-}
-
-.typcn-key-outline:before {
-  content: '\e096'; /* '' */
-}
-
-.typcn-key:before {
-  content: '\e097'; /* '' */
-}
-
-.typcn-keyboard:before {
-  content: '\e098'; /* '' */
-}
-
-.typcn-leaf:before {
-  content: '\e099'; /* '' */
-}
-
-.typcn-lightbulb:before {
-  content: '\e09a'; /* '' */
-}
-
-.typcn-link-outline:before {
-  content: '\e09b'; /* '' */
-}
-
-.typcn-link:before {
-  content: '\e09c'; /* '' */
-}
-
-.typcn-location-arrow-outline:before {
-  content: '\e09d'; /* '' */
-}
-
-.typcn-location-arrow:before {
-  content: '\e09e'; /* '' */
-}
-
-.typcn-location-outline:before {
-  content: '\e09f'; /* '' */
-}
-
-.typcn-location:before {
-  content: '\e0a0'; /* '' */
-}
 
 .typcn-lock-closed-outline:before {
   content: '\e0a1'; /* '' */

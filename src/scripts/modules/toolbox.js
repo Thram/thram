@@ -102,5 +102,9 @@ thram.toolbox = (function () {
             .replace(/ /g, '');
     };
 
+    _ToolBoxApi.getFileName = function (path) {
+        return path.split('\\').pop().split('/').pop();
+    };
+
     return _ToolBoxApi;
 })();

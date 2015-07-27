@@ -42,7 +42,10 @@
 /* Gutters */
 .block {
   padding: 4px;
-  &.stretch {
+}
+
+.no-gutters {
+  .block {
     padding: 0;
   }
 }

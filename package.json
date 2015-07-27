@@ -26,6 +26,7 @@
     "gulp": "^3.9.0",
     "gulp-compass": "^2.1.0",
     "gulp-concat": "^2.6.0",
+    "gulp-file-include": "https://github.com/Thram/gulp-file-include",
     "gulp-gzip": "^1.2.0",
     "gulp-js-html-inject": "0.0.1",
     "gulp-jshint": "^1.11.2",
