@@ -12,6 +12,7 @@
   ],
   "license": "MIT",
   "dependencies": {
-    "playground.css": "*"
+    "playground.css": "*",
+    "thram.js": "*"
   }
 }
