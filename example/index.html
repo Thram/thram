@@ -15,60 +15,58 @@
     </div>
 </div>
 
-<script type="text/template" id="example-view">
-    <div class="example-view block">
-        <h1>View!</h1>
-        <hr class="glyph">
-        <h2>Components <i class="cog"></i></h2>
-        <label> TESTING!</label>
+<script type="text/template" id="example-view"> <div class="example-view block">
+    <h1>View!</h1>
+    <hr class="glyph">
+    <h2>Components <i class="cog"></i></h2>
+    <label> TESTING!</label>
 
-        <div id="components-container">
-            <div class="block-group">
-                <div class="block wrap-content" data-thram-component="example-component"
-                     data-thram-data="{title:'Component 1', info:'Info component 1'}"></div>
-                <div class="block  width-3 height-4" data-thram-component="example-component"
-                     data-thram-data="{title:'Component 2', info:'Info component 2'}"></div>
-                <div class="block wrap-content stretch" data-thram-component="example-component"
-                     data-thram-data="{title:'Component 3', info:'Info component 3'}"></div>
-                <div class="block wrap-content " data-thram-component="example-component"
-                     data-thram-data="{title:'Component 1', info:'Info component 1'}"></div>
-                <div class="block  width-3 height-4" data-thram-component="example-component"
-                     data-thram-data="{title:'Component 2', info:'Info component 2'}"></div>
-                <div class="block wrap-content " data-thram-component="example-component"
-                     data-thram-data="{title:'Component 3', info:'Info component 3'}"></div>
-                <div class="block wrap-content " data-thram-component="example-component"
-                     data-thram-data="{title:'Component 1', info:'Info component 1'}"></div>
-                <div class="block  width-3 height-4" data-thram-component="example-component"
-                     data-thram-data="{title:'Component 2', info:'Info component 2'}"></div>
-                <div class="block wrap-content " data-thram-component="example-component"
-                     data-thram-data="{title:'Component 3', info:'Info component 3'}"></div>
-                <div class="block wrap-content " data-thram-component="example-component"
-                     data-thram-data="{title:'Component 1', info:'Info component 1'}"></div>
-                <div class="block  width-3 height-4" data-thram-component="example-component"
-                     data-thram-data="{title:'Component 2', info:'Info component 2'}"></div>
-                <div class="block wrap-content " data-thram-component="example-component"
-                     data-thram-data="{title:'Component 3', info:'Info component 3'}"></div>
-            </div>
-        </div>
-
+    <div id="components-container">
         <div class="block-group">
-            <div class="block width-3 " data-thram-component="example-component"
+            <div class="block wrap-content" data-thram-component="example-component"
                  data-thram-data="{title:'Component 1', info:'Info component 1'}"></div>
             <div class="block  width-3 height-4" data-thram-component="example-component"
                  data-thram-data="{title:'Component 2', info:'Info component 2'}"></div>
-            <div class="block fill-width " data-thram-component="example-component"
+            <div class="block wrap-content stretch" data-thram-component="example-component"
+                 data-thram-data="{title:'Component 3', info:'Info component 3'}"></div>
+            <div class="block wrap-content " data-thram-component="example-component"
+                 data-thram-data="{title:'Component 1', info:'Info component 1'}"></div>
+            <div class="block  width-3 height-4" data-thram-component="example-component"
+                 data-thram-data="{title:'Component 2', info:'Info component 2'}"></div>
+            <div class="block wrap-content " data-thram-component="example-component"
+                 data-thram-data="{title:'Component 3', info:'Info component 3'}"></div>
+            <div class="block wrap-content " data-thram-component="example-component"
+                 data-thram-data="{title:'Component 1', info:'Info component 1'}"></div>
+            <div class="block  width-3 height-4" data-thram-component="example-component"
+                 data-thram-data="{title:'Component 2', info:'Info component 2'}"></div>
+            <div class="block wrap-content " data-thram-component="example-component"
+                 data-thram-data="{title:'Component 3', info:'Info component 3'}"></div>
+            <div class="block wrap-content " data-thram-component="example-component"
+                 data-thram-data="{title:'Component 1', info:'Info component 1'}"></div>
+            <div class="block  width-3 height-4" data-thram-component="example-component"
+                 data-thram-data="{title:'Component 2', info:'Info component 2'}"></div>
+            <div class="block wrap-content " data-thram-component="example-component"
                  data-thram-data="{title:'Component 3', info:'Info component 3'}"></div>
         </div>
-        <div class="block">
-            <button class="success">TEST!!!</button>
-        </div>
-    </div> </script>
-<script type="text/template" id="example-component">
-    <div class="example-item block grey darken-{{ Math.floor(Math.random() * (5 - 1) + 1) }}">
-        <h1> {{ this.title }}</h1>
+    </div>
 
-        <p> {{ this.info }}</p>
-    </div> </script>
+    <div class="block-group">
+        <div class="block width-3 " data-thram-component="example-component"
+             data-thram-data="{title:'Component 1', info:'Info component 1'}"></div>
+        <div class="block  width-3 height-4" data-thram-component="example-component"
+             data-thram-data="{title:'Component 2', info:'Info component 2'}"></div>
+        <div class="block fill-width " data-thram-component="example-component"
+             data-thram-data="{title:'Component 3', info:'Info component 3'}"></div>
+    </div>
+    <div class="block">
+        <button class="success">TEST!!!</button>
+    </div>
+</div> </script>
+<script type="text/template" id="example-component"> <div class="example-item block grey darken-{{ Math.floor(Math.random() * (5 - 1) + 1) }}">
+    <h1> {{ this.title }}</h1>
+
+    <p> {{ this.info }}</p>
+</div> </script>
 <script type="application/javascript" src="bower_components/thram.js/dist/thram.js"></script>
 <script type="application/javascript" src="example.js"></script>
 </body>
