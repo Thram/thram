@@ -1,14 +1,18 @@
 {
-  "name": "thramjs",
+  "name": "thram.js",
   "version": "0.1.0",
-  "homepage": "https://github.com/Thram/thram-js",
+  "homepage": "http://thram.github.io/thram/",
   "authors": [
     "thram <thramposo@gmail.com>"
   ],
   "description": "Modular Customizable Front-End Framework",
-  "main": "thram.js",
+  "main": [
+    "dist/thram.js",
+    "dist/thram.min.js"
+  ],
   "keywords": [
     "thram",
+    "thram.js",
     "thramjs"
   ],
   "license": "MIT",

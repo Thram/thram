@@ -1,34 +1,45 @@
 /**
  * Created by thram on 20/07/15.
  */
-var gulp = require('gulp'),
-    concat = require('gulp-concat'),
-    rename = require('gulp-rename'),
-    uglify = require('gulp-uglify'),
-    jshint = require('gulp-jshint'),
-    serve = require('gulp-serve'),
-    compass = require('gulp-compass'),
-    notify = require('gulp-notify'),
-    livereload = require('gulp-livereload'),
+var gulp        = require('gulp'),
+    concat      = require('gulp-concat'),
+    rename      = require('gulp-rename'),
+    uglify      = require('gulp-uglify'),
+    jshint      = require('gulp-jshint'),
+    serve       = require('gulp-serve'),
+    compass     = require('gulp-compass'),
+    notify      = require('gulp-notify'),
+    livereload  = require('gulp-livereload'),
     fileinclude = require('gulp-file-include'),
-    plumber = require('gulp-plumber'),
-    gzip = require('gulp-gzip'),
-    del = require('del'),
-    sync = require('gulp-sync')(gulp),
-    path = require('path');
+    plumber     = require('gulp-plumber'),
+    gzip        = require('gulp-gzip'),
+    del         = require('del'),
+    sync        = require('gulp-sync')(gulp),
+    path        = require('path');
 
+gulp.task('usemin', function () {
+    gulp.src('client/templates/*.html')
+        .pipe(usemin())
+        .pipe(gulp.dest('public/templates'));
+    gulp.src('client/templates/views/*.html')
+        .pipe(usemin())
+        .pipe(gulp.dest('public/templates/views'));
+    return gulp.src('client/templates/components/*.html')
+        .pipe(usemin())
+        .pipe(gulp.dest('public/templates/components'));
+});
 
 //the title and icon that will be used for the Grunt notifications
 var notifyInfo = {
     title: 'Gulp',
-    icon: path.join(__dirname, 'gulp.png')
+    icon : path.join(__dirname, 'gulp.png')
 };
 
 //error notification settings for plumber
 var plumberErrorHandler = {
     errorHandler: notify.onError({
-        title: notifyInfo.title,
-        icon: notifyInfo.icon,
+        title  : notifyInfo.title,
+        icon   : notifyInfo.icon,
         message: "Error: <%= error.message %>"
     })
 };
@@ -39,20 +50,19 @@ gulp.task('clean', function (cb) {
 
 // Lint Task
 gulp.task('lint', function () {
-    return gulp.src(['src/scripts/thram.js', 'src/scripts/**/*.js'])
+    return gulp.src('src/**/*.js')
         .pipe(jshint({expr: true}))
         .pipe(jshint.reporter('jshint-stylish'));
 });
 
 gulp.task('build', function () {
-    return gulp.src(['src/scripts/thram.js', 'src/scripts/**/*.js'])
+    return gulp.src('src/**/*.js')
         .pipe(concat('thram.js'))
-        .pipe(gulp.dest('dist/js'))
-        .pipe(gulp.dest('example/js'))
+        .pipe(gulp.dest('dist'))
         .pipe(rename('thram.min.js'))
         .pipe(uglify())
-        //.pipe(gzip({append:false}))
-        .pipe(gulp.dest('dist/js'));
+        .pipe(gzip({append: false}))
+        .pipe(gulp.dest('dist'));
 });
 
 var sass = require('gulp-sass');
@@ -68,7 +78,7 @@ gulp.task('styles', function () {
     return gulp.src(['src/stylesheets/playground.scss'])
         .pipe(plumber(plumberErrorHandler))
         .pipe(compass({
-            sass: 'src/stylesheets',
+            sass : 'src/stylesheets',
             image: 'src/images'
         }))
         .pipe(gulp.dest('example/css'));

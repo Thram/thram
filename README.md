@@ -1,1 +1,1 @@
-# ThramJS
+# Thram.js

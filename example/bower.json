@@ -1,0 +1,17 @@
+{
+  "name": "example-thram",
+  "version": "0.1.0",
+  "homepage": "thram.github.io/thram",
+  "authors": [
+    "thram <thramposo@gmail.com>"
+  ],
+  "description": "Example for thram.js (and playground.css)",
+  "main": "dist/thram.js",
+  "keywords": [
+    "thram"
+  ],
+  "license": "MIT",
+  "dependencies": {
+    "playground.css": "*"
+  }
+}

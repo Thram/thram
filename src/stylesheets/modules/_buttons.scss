@@ -1,5 +1,0 @@
-button, .btn {
-  &.success {
-    @include button(color("teal", "darken-1"), white);
-  }
-}
