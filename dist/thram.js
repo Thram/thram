@@ -381,10 +381,12 @@ thram.animation = (function () {
  * Created by thram on 27/07/15.
  */
 (function () {
+
+    var _addOns = {};
+
     var $t = function () {
         // DOM Manipulation
         var _DOMApi = {}, _el, selector = arguments[0];
-
 
         function _create() {
             var helper = document.createElement('div');
@@ -393,12 +395,16 @@ thram.animation = (function () {
         }
 
         function _query() {
-            var target = arguments[1] || document;
+            var target   = arguments[1] || document;
             var elements = target.querySelectorAll(arguments[0]);
             return elements.length === 1 ? elements[0] : elements;
         }
 
         _el = thram.toolbox.isDOMElement(selector) ? selector : (/<[a-z][\s\S]*>/i.test(selector)) ? _create(selector) : _query(selector, arguments[1]);
+
+        for (var key in _addOns) {
+            _DOMApi[key] = _addOns.hasOwnProperty(key) ? _addOns[key].bind(_el) : undefined;
+        }
 
         _DOMApi.remove = function () {
             if (arguments[0]) {
@@ -447,7 +453,7 @@ thram.animation = (function () {
             }
             throw thram.exceptions.missing_key;
         };
-        _DOMApi.css = function () {
+        _DOMApi.css  = function () {
             if (arguments[0]) {
                 var key = thram.toolbox.toCamelCase(arguments[0].split('-').join(' '));
                 return arguments[1] ? _el.style[key] = arguments[1] : _el.style[key];
@@ -468,33 +474,33 @@ thram.animation = (function () {
             return arguments[0] ? (_el.innerHTML = thram.toolbox.isString(arguments[0]) ? arguments[0] : arguments[0].element.innerHTML) : _el.innerHTML;
         };
 
-        _DOMApi.after = function () {
+        _DOMApi.after  = function () {
             _el.parentNode.insertBefore(arguments[0].element, _el.nextSibling);
         };
         _DOMApi.before = function () {
             _el.parentNode.insertBefore(arguments[0].element, _el);
         };
 
-        _DOMApi.isEmpty = function () {
+        _DOMApi.isEmpty  = function () {
             return _el.hasChildNodes();
         };
-        _DOMApi.next = function () {
+        _DOMApi.next     = function () {
             return $t(_el.nextSibling);
         };
         _DOMApi.previous = function () {
             return $t(_el.previousSibling);
         };
-        _DOMApi.parent = function () {
+        _DOMApi.parent   = function () {
             return $t(_el.parentNode);
         };
-        _DOMApi.empty = function () {
+        _DOMApi.empty    = function () {
             while (_el.firstChild) _el.removeChild(_el.firstChild);
             return _DOMApi;
         };
-        _DOMApi.clone = function () {
+        _DOMApi.clone    = function () {
             return $t(_el.cloneNode(true));
         };
-        _DOMApi.find = function () {
+        _DOMApi.find     = function () {
             return $t(arguments[0], _el);
         };
         _DOMApi.addClass = function () {
@@ -510,7 +516,7 @@ thram.animation = (function () {
             _el.classList.toggle(arguments[0]);
             return _DOMApi;
         };
-        _DOMApi.each = function () {
+        _DOMApi.each        = function () {
             var callback = arguments[0];
             if (thram.toolbox.isNodeList(_el)) {
                 thram.toolbox.iterate(_el, function () {
@@ -519,18 +525,18 @@ thram.animation = (function () {
                 });
             }
         };
-        _DOMApi.render = function () {
+        _DOMApi.render      = function () {
             if (arguments) {
-                var options = arguments[1] || {};
+                var options       = arguments[1] || {};
                 options.container = _DOMApi;
                 return thram.render.component(arguments[0], arguments[1]);
             }
 
         };
-        _DOMApi.load = function () {
-            var options = arguments[0] || {};
-            var success = options.success;
-            options.type = 'html';
+        _DOMApi.load        = function () {
+            var options     = arguments[0] || {};
+            var success     = options.success;
+            options.type    = 'html';
             options.success = function (res) {
                 var html = $t(res);
                 _DOMApi.append(html);
@@ -542,7 +548,6 @@ thram.animation = (function () {
         _DOMApi.element = _el;
         return _DOMApi;
     };
-
 
     /**
      * DOM Ready
@@ -563,6 +568,15 @@ thram.animation = (function () {
         return function (fn) {
             loaded ? setTimeout(fn, 0) : fns.push(fn);
         };
+    };
+
+    $t.registerAddOn = function () {
+        var key = arguments[0], func = arguments[1];
+        if (key && func) {
+            _addOns[arguments[0]] = func;
+        } else {
+            throw thram.exceptions.wrong_type_arguments;
+        }
     };
 
     window.$t = $t;

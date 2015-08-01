@@ -27,6 +27,7 @@ gulp.task('build', function () {
     return gulp.src('src/**/*.js')
         .pipe(concat('thram.js'))
         .pipe(gulp.dest('dist'))
+        .pipe(gulp.dest('example'))
         .pipe(rename('thram.min.js'))
         .pipe(uglify())
         .pipe(gzip({append: false}))
@@ -63,4 +64,4 @@ gulp.task('browser-sync', function () {
 });
 
 gulp.task('dist', sync.sync(['clean', ['lint', 'build']]));
-gulp.task('server', sync.sync(['clean', ['templates', 'lint', 'build', 'browser-sync', 'watch']]));
+gulp.task('example', sync.sync(['clean', ['templates', 'lint', 'build', 'browser-sync', 'watch']]));
