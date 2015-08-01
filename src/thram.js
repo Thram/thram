@@ -4,10 +4,27 @@
  * Micro front-end framework
  *
  * Created by thram on 17/06/15.
+ *
+ * Core Libs:
+ *
+ * thram.exceptions
+ * thram.toolbox
+ * thram.dom
+ * * thram.ajax
+ * (Optional) thram.storage // Enables local storage
+ * (Optional) thram.templates // Enables partial rendering and client-side routing
+ * thram.router
+ * thram.event
+ * (Optional) thram.animations // Enables animations and transitions
+ * (Optional) thram.transitions // Enables page transitions
+ *
  */
 (function () {
     // Core
-    var thram = {}, _views = {}, _components = {}, _models = {};
+    var thram       = {},
+        _views      = {},
+        _components = {},
+        _models     = {};
 
     thram.create = (function () {
         var _CreateApi = {};
@@ -74,7 +91,7 @@
     })();
 
     thram.remove = (function () {
-        var _RemoveApi = {};
+        var _RemoveApi  = {};
         _RemoveApi.view = function (id) {
             delete _views[id];
         };
@@ -99,24 +116,24 @@
 
         function _getScriptTemplate(url) {
             var filename = thram.toolbox.getFileName(url);
-            var a = filename.split('.');
+            var a        = filename.split('.');
             a.pop();
             var template = $t('script#' + a);
             return template ? template.html() : undefined;
         }
 
         _RenderApi.view = function (id, options) {
-            var v = _views[id]();
-            options = options || {};
+            var v         = _views[id]();
+            options       = options || {};
             options.async = false;
-            var success = options.success;
+            var success   = options.success;
 
             function _initView() {
-                var base = thram.get.view('base');
+                var base       = thram.get.view('base');
                 base && base(options.data);
-                thram.views.current = id;
+                _views.current = id;
                 v.controller(options.data);
-                thram.views.enter();
+                thram.event.trigger('view:enter', {id: id});
                 success && success(v);
                 thram.event.trigger('view:render:finished', {id: id});
             }
@@ -128,12 +145,12 @@
                 if (!template) {
                     template = _getScriptTemplate(v.templateURL);
                     if (!template) {
-                        options.async = true;
+                        options.async   = true;
                         options.success = function (res) {
                             v.template = res;
                             _initView();
                         };
-                        template = v.templateURL;
+                        template        = v.templateURL;
                     }
                 }
 
@@ -146,11 +163,11 @@
             // You need the Template Module to render the modules
             if (!thram.templates) throw thram.exceptions.missing_module;
 
-            options = options || {};
-            var id = options.container.data('thram-component');
-            var c = _components[id]();
+            options       = options || {};
+            var id        = options.container.data('thram-component');
+            var c         = _components[id]();
             options.async = false;
-            var success = options.success;
+            var success   = options.success;
 
             function _initComponent() {
                 if (c.controller) {
@@ -164,12 +181,12 @@
             if (!template) {
                 template = _getScriptTemplate(c.templateURL);
                 if (!template) {
-                    options.async = true;
+                    options.async   = true;
                     options.success = function (res) {
                         c.template = res;
                         _initComponent();
                     };
-                    template = c.templateURL;
+                    template        = c.templateURL;
                 }
             }
             if (c.className) options.container.addClass(c.className);
@@ -180,7 +197,6 @@
         return _RenderApi;
     })();
 
-
     thram._resolve = function () {
         var _callback = arguments[0], _el = arguments[1], args = arguments[2] || arguments[1] || {};
         if (_callback) {
@@ -189,16 +205,18 @@
         }
     };
 
-    thram.start = (function () {
+    thram.start  = (function () {
         $t.ready()(function () {
-            thram.views.enter();
             thram.router.process();
             if (thram.router.clientSideRouting) {
                 window.addEventListener("hashchange", function (e) {
-                    thram.views.leave(thram.views.current);
+                    thram.event.trigger('view:leave', {id: _views.current});
                     thram.router.process();
                 }, false);
             }
+            window.onbeforeunload = function () {
+                thram.event.trigger('view:leave', {id: _views.current});
+            };
         });
     });
     window.thram = thram;

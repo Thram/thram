@@ -22,10 +22,20 @@ gulp.task('lint', function () {
         .pipe(jshint({expr: true}))
         .pipe(jshint.reporter('jshint-stylish'));
 });
-
 gulp.task('build', function () {
-    return gulp.src('src/**/*.js')
-        .pipe(concat('thram.js'))
+    return gulp.src([
+        'src/thram.js',
+        'src/modules/exceptions.js',
+        'src/modules/toolbox.js',
+        'src/modules/ajax.js',
+        'src/modules/dom.js',
+        'src/modules/storage.js',
+        'src/modules/templates.js',
+        'src/modules/router.js',
+        'src/modules/event.js',
+        'src/modules/animations.js',
+        'src/modules/transitions.js'
+    ]).pipe(concat('thram.js'))
         .pipe(gulp.dest('dist'))
         .pipe(gulp.dest('example'))
         .pipe(rename('thram.min.js'))

@@ -1,72 +1,95 @@
 /**
  * Created by thram on 20/07/15.
+ *
+ * Router Module
+ *
+ * It handles Client-Side (attaching a template to the view)
+ * and Server-Side routing (triggering the view controller depending on
+ * the route for an easy integration with server-side rendering)
+ *
+ * Dependencies:
+ * thram
+ * thram.exceptions
+ * thram.toolbox
+ *
+ * (Optional) thram.templates // The module + the clientSideRouting flag enable Client Side Routing
+ *
  */
-thram.router = (function () {
-    var _routes = {};
 
-    function go(route) {
-        if (thram.templates) {
-            window.location.hash = '#' + route;
-        } else {
-            window.location.href = route;
-        }
-    }
+(function () {
+    window.thram        = window.thram || {};
+    window.thram.router = (function () {
+        var _RouterApi  = {},
+            _routes     = {},
+            _templates  = window.thram.templates,
+            _exceptions = window.thram.exceptions,
+            _toolbox    = window.thram.toolbox,
+            _render     = window.thram.render;
 
-    function process() {
-        var BreakException = {};
-        try {
-            thram.routes.forEach(function (route) {
-                var routeMatcher = new RegExp(route.route.replace(/:[^\s/]+/g, '([\\w-]+)'));
-                var url = window.location.pathname;
-                if (thram.router.clientSideRouting) {
-                    url = window.location.hash || '/';
-                    if (url.indexOf('#') === 0) {
-                        if (url.indexOf('#/') === 0) {
-                            url = url.substr(url.indexOf('#') + 1);
-                        } else {
-                            thram.views.scrollTo(url);
-                        }
-                    }
-                }
+        _RouterApi.go = function (route) {
+            if (_RouterApi.clientSideRouting && _templates) {
+                window.location.hash = '#' + route;
+            } else {
+                window.location.href = route;
+            }
+        };
 
-                var match = url.match(routeMatcher);
-                if (match && match.length > 0 && match[0] === url) {
-                    var params = {};
-                    if (route.route.indexOf(':') >= 0) {
-                        var keys = route.route.match(/:(.+?)(\/|\?|$)/g);
-                        if (keys) {
-                            keys = keys.join('&').replace(/:/g, '').replace(/\//g, '').split('&');
-                            var values = match;
-                            keys.forEach(function (key, i) {
-                                params[key] = values[i];
-                            });
+        _RouterApi.process = function () {
+            var BreakException = {};
+            try {
+                for (var _route in _routes) {
+
+                    var routeMatcher = new RegExp(_route.replace(/:[^\s/]+/g, '([\\w-]+)'));
+                    var url          = window.location.pathname;
+                    if (_RouterApi.clientSideRouting && _templates) {
+                        url = window.location.hash || '/';
+                        if (url.indexOf('#') === 0) {
+                            if (url.indexOf('#/') === 0) {
+                                url = url.substr(url.indexOf('#') + 1);
+                            } else {
+                                var el = $t('#' + url);
+                                $t('body').scrollTo(el.bounds().top);
+                            }
                         }
                     }
 
-                    var view = thram.toolbox.isString(route.view) ? {id: route.view} : route.view;
+                    var match = url.match(routeMatcher);
+                    if (match && match.length > 0 && match[0] === url) {
+                        var params = {};
+                        if (_route.indexOf(':') >= 0) {
+                            var keys = _route.match(/:(.+?)(\/|\?|$)/g);
+                            if (keys) {
+                                keys       = keys.join('&').replace(/:/g, '').replace(/\//g, '').split('&');
+                                var values = match;
+                                keys.forEach(function (key, i) {
+                                    params[key] = values[i];
+                                });
+                            }
+                        }
 
-                    // Validation to restrict the access to the route
-                    route.validate ?
-                        (route.validate.validation() ? thram.render.view(view.id, view.data) : route.validate.onValidationFail())
-                        : thram.render.view(view.id, view.data);
+                        var _routeSettings = _routes[_route];
+                        var view           = _toolbox.isString(_routeSettings.view) ? {id: _routeSettings.view} : _routeSettings.view;
 
-                    throw BreakException;
+                        // Validation to restrict the access to the route
+                        _routeSettings.validate ?
+                            (_routeSettings.validate.validation() ? _render.view(view.id, view.data) : _routeSettings.validate.onValidationFail())
+                            : _render.view(view.id, view.data);
+
+                        throw BreakException;
+                    }
                 }
-            });
-        } catch (e) {
-            if (e !== BreakException) throw e;
-        }
-    }
+            } catch (e) {
+                if (e !== BreakException) throw e;
+            }
+        };
 
-    function register(route, options) {
-        if (!options.view) throw thram.exceptions.no_view;
-        _routes[route] = options;
-    }
+        _RouterApi.register = function (route, settings) {
+            if (!settings.view) throw _exceptions.no_view;
+            _routes[route] = settings;
+        };
 
-    return {
-        clientSideRouting: true,
-        register: register,
-        go: go,
-        process: process
-    };
+        _RouterApi.clientSideRouting = true;
+
+        return _RouterApi;
+    })();
 })();
