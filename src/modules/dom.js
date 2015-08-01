@@ -9,7 +9,6 @@
  * thram.ajax
  * thram.exceptions
  * thram.toolbox
- * * thram.exceptions
  *
  */
 (function () {
@@ -54,6 +53,8 @@
         }
 
         _el = _toolbox.isDOMElement(selector) ? selector : (/<[a-z][\s\S]*>/i.test(selector)) ? _create(selector) : _query(selector, arguments[1]);
+
+        if (_el.length === 0) return undefined;
 
         for (var key in _addOns) {
             _DOMApi[key] = _addOns.hasOwnProperty(key) ? _addOns[key].bind(_el) : undefined;
@@ -252,6 +253,80 @@
                 _resolve(success, _DOMApi, html);
             };
             _ajax.get(options);
+        };
+
+        _DOMApi.on      = function () {
+            var _event = arguments[0], _func = arguments[1];
+            if (_toolbox.isString(_event) && _toolbox.isFunction(_func)) {
+                _el.addEventListener(_event, _func, false);
+            } else {
+                throw _exceptions.wrong_type_arguments;
+            }
+        };
+        _DOMApi.off     = function () {
+            var _event = arguments[0], _func = arguments[1];
+            if (_toolbox.isString(_event)) {
+                _el.removeEventListener(_event, _func);
+            } else {
+                throw _exceptions.wrong_type_arguments;
+            }
+        };
+        _DOMApi.trigger = function () {
+            var _event = arguments[0], data = arguments[1];
+            if (_toolbox.isString(_event)) {
+                _el.dispatchEvent(new Event(_event, data));
+            } else {
+                throw _exceptions.wrong_type_arguments;
+            }
+        };
+        _DOMApi.bind    = function () {
+            var _event = arguments[0], _func = arguments[1];
+            if (_toolbox.isString(_event) && _toolbox.isFunction(_func)) {
+                _el.removeEventListener(_event, _func);
+                _el.addEventListener(_event, _func, false);
+            } else {
+                throw _exceptions.wrong_type_arguments;
+            }
+        };
+
+        _DOMApi.touch = function () {
+
+            _el.addEventListener("touchstart", touchStartHandler, false);
+            _el.addEventListener("touchend", touchEndHandler, false);
+
+            var touchesInAction = {};
+
+            function touchStartHandler(event) {
+                var touches = event.changedTouches;
+
+                for (var j = 0; j < touches.length; j++) {
+
+                    /* store touch info on touchstart */
+                    touchesInAction["$" + touches[j].identifier] = {
+
+                        identifier: touches[j].identifier,
+                        pageX     : touches[j].pageX,
+                        pageY     : touches[j].pageY
+                    };
+                }
+            }
+
+            function touchEndHandler(event) {
+                var touches = event.changedTouches;
+
+                for (var j = 0; j < touches.length; j++) {
+
+                    /* access stored touch info on touchend */
+                    var theTouchInfo = touchesInAction["$" + touches[j].identifier];
+                    theTouchInfo.dx  = touches[j].pageX - theTouchInfo.pageX;
+                    /* x-distance moved since touchstart */
+                    theTouchInfo.dy = touches[j].pageY - theTouchInfo.pageY;
+                    /* y-distance moved since touchstart */
+                }
+
+                /* determine what gesture was performed, based on dx and dy (tap, swipe, one or two fingers etc. */
+
+            }
         };
 
         _DOMApi.element = _el;

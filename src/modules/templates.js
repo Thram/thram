@@ -106,9 +106,11 @@
                     $el.remove('data', 'thram-data');
                     $el.html(html);
                     var components = $el.find('[data-thram-component]');
-                    components.each(function (component) {
-                        _render.component({container: component, data: _getData(component)});
-                    });
+                    if (components) {
+                        components.each(function (component) {
+                            _render.component({container: component, data: _getData(component)});
+                        });
+                    }
                     options.success && options.success(res, $el);
                 }
 

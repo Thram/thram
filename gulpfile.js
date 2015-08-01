@@ -34,7 +34,8 @@ gulp.task('build', function () {
         'src/modules/router.js',
         'src/modules/event.js',
         'src/modules/animations.js',
-        'src/modules/transitions.js'
+        'src/modules/transitions.js',
+        //'src/modules/gestures.js' Work in Progress
     ]).pipe(concat('thram.js'))
         .pipe(gulp.dest('dist'))
         .pipe(gulp.dest('example'))
@@ -55,7 +56,7 @@ gulp.task('templates', function () {
 gulp.task('watch', function () {
     var src = {
         html: 'src/example/**/*.html',
-        js  : 'example/example.js'
+        js  : ['example/example.js', 'src/**/*.js']
     };
 
     gulp.watch([src.html], ['templates']);

@@ -311,7 +311,7 @@
         })(this);
 
         _ToolBoxApi.isDOMElement = function (obj) {
-            return obj && !!obj.tagName;
+            return obj && (!!obj.tagName || _ToolBoxApi.isType(obj, 'htmldocument'));
         };
         _ToolBoxApi.isType       = function (obj, type) {
             return _ToolBoxApi.toType(obj) === type;
@@ -594,7 +594,6 @@
  * thram.ajax
  * thram.exceptions
  * thram.toolbox
- * * thram.exceptions
  *
  */
 (function () {
@@ -639,6 +638,8 @@
         }
 
         _el = _toolbox.isDOMElement(selector) ? selector : (/<[a-z][\s\S]*>/i.test(selector)) ? _create(selector) : _query(selector, arguments[1]);
+
+        if (_el.length === 0) return undefined;
 
         for (var key in _addOns) {
             _DOMApi[key] = _addOns.hasOwnProperty(key) ? _addOns[key].bind(_el) : undefined;
@@ -781,12 +782,18 @@
         };
 
         _DOMApi.removeClass = function () {
-            _el.classList.remove(arguments[0]);
+            var classes = arguments[0].split(' ');
+            _toolbox.iterate(classes, function (className) {
+                _el.classList.remove(className);
+            });
             return _DOMApi;
         };
 
         _DOMApi.toggleClass = function () {
-            _el.classList.toggle(arguments[0]);
+            var classes = arguments[0].split(' ');
+            _toolbox.iterate(classes, function (className) {
+                _el.classList.toggle(className);
+            });
             return _DOMApi;
         };
 
@@ -831,6 +838,80 @@
                 _resolve(success, _DOMApi, html);
             };
             _ajax.get(options);
+        };
+
+        _DOMApi.on      = function () {
+            var _event = arguments[0], _func = arguments[1];
+            if (_toolbox.isString(_event) && _toolbox.isFunction(_func)) {
+                _el.addEventListener(_event, _func, false);
+            } else {
+                throw _exceptions.wrong_type_arguments;
+            }
+        };
+        _DOMApi.off     = function () {
+            var _event = arguments[0], _func = arguments[1];
+            if (_toolbox.isString(_event)) {
+                _el.removeEventListener(_event, _func);
+            } else {
+                throw _exceptions.wrong_type_arguments;
+            }
+        };
+        _DOMApi.trigger = function () {
+            var _event = arguments[0], data = arguments[1];
+            if (_toolbox.isString(_event)) {
+                _el.dispatchEvent(new Event(_event, data));
+            } else {
+                throw _exceptions.wrong_type_arguments;
+            }
+        };
+        _DOMApi.bind    = function () {
+            var _event = arguments[0], _func = arguments[1];
+            if (_toolbox.isString(_event) && _toolbox.isFunction(_func)) {
+                _el.removeEventListener(_event, _func);
+                _el.addEventListener(_event, _func, false);
+            } else {
+                throw _exceptions.wrong_type_arguments;
+            }
+        };
+
+        _DOMApi.touch = function () {
+
+            _el.addEventListener("touchstart", touchStartHandler, false);
+            _el.addEventListener("touchend", touchEndHandler, false);
+
+            var touchesInAction = {};
+
+            function touchStartHandler(event) {
+                var touches = event.changedTouches;
+
+                for (var j = 0; j < touches.length; j++) {
+
+                    /* store touch info on touchstart */
+                    touchesInAction["$" + touches[j].identifier] = {
+
+                        identifier: touches[j].identifier,
+                        pageX     : touches[j].pageX,
+                        pageY     : touches[j].pageY
+                    };
+                }
+            }
+
+            function touchEndHandler(event) {
+                var touches = event.changedTouches;
+
+                for (var j = 0; j < touches.length; j++) {
+
+                    /* access stored touch info on touchend */
+                    var theTouchInfo = touchesInAction["$" + touches[j].identifier];
+                    theTouchInfo.dx  = touches[j].pageX - theTouchInfo.pageX;
+                    /* x-distance moved since touchstart */
+                    theTouchInfo.dy = touches[j].pageY - theTouchInfo.pageY;
+                    /* y-distance moved since touchstart */
+                }
+
+                /* determine what gesture was performed, based on dx and dy (tap, swipe, one or two fingers etc. */
+
+            }
         };
 
         _DOMApi.element = _el;
@@ -1193,9 +1274,11 @@
                     $el.remove('data', 'thram-data');
                     $el.html(html);
                     var components = $el.find('[data-thram-component]');
-                    components.each(function (component) {
-                        _render.component({container: component, data: _getData(component)});
-                    });
+                    if (components) {
+                        components.each(function (component) {
+                            _render.component({container: component, data: _getData(component)});
+                        });
+                    }
                     options.success && options.success(res, $el);
                 }
 
@@ -1322,21 +1405,20 @@
  * Created by thram on 20/07/15.
  */
 (function () {
-    window.thram = window.thram || {};
-    window.thram.event  = (function () {
+    window.thram       = window.thram || {};
+    window.thram.event = (function () {
         var _EventApi     = {};
         _EventApi.trigger = function (event, data) {
-            var ev = new Event('thram:' + event, data);
-            dispatchEvent(ev);
+            document.dispatchEvent(new Event('thram:' + event, data));
         };
         _EventApi.on      = function (event, func, reset) {
             if (reset) {
-                removeEventListener("thram:" + event, func);
+                document.removeEventListener("thram:" + event, func);
             }
-            addEventListener("thram:" + event, func);
+            document.addEventListener("thram:" + event, func);
         };
         _EventApi.off     = function (event, func) {
-            removeEventListener("thram:" + event, func);
+            document.removeEventListener("thram:" + event, func);
         };
 
         return _EventApi;
