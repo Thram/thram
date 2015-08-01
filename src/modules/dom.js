@@ -196,12 +196,18 @@
         };
 
         _DOMApi.removeClass = function () {
-            _el.classList.remove(arguments[0]);
+            var classes = arguments[0].split(' ');
+            _toolbox.iterate(classes, function (className) {
+                _el.classList.remove(className);
+            });
             return _DOMApi;
         };
 
         _DOMApi.toggleClass = function () {
-            _el.classList.toggle(arguments[0]);
+            var classes = arguments[0].split(' ');
+            _toolbox.iterate(classes, function (className) {
+                _el.classList.toggle(className);
+            });
             return _DOMApi;
         };
 
