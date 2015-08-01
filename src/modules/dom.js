@@ -43,6 +43,16 @@
             return (_el.offsetParent === null)
         }
 
+        function _isElementInViewport() {
+            var rect = _el.getBoundingClientRect();
+            return (
+                rect.top >= 0 &&
+                rect.left >= 0 &&
+                rect.bottom <= (window.innerHeight || document.documentElement.clientHeight) && /*or $(window).height() */
+                rect.right <= (window.innerWidth || document.documentElement.clientWidth) /*or $(window).width() */
+            );
+        }
+
         _el = _toolbox.isDOMElement(selector) ? selector : (/<[a-z][\s\S]*>/i.test(selector)) ? _create(selector) : _query(selector, arguments[1]);
 
         for (var key in _addOns) {
@@ -201,7 +211,7 @@
                     return _DOMApi.prop('checked');
                     break;
                 case ":visible":
-                    return !_isHidden();
+                    return !_isHidden() && _isElementInViewport();
                     break;
             }
         };
