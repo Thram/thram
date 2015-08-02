@@ -39,7 +39,7 @@
         }
 
         function _isHidden() {
-            return (_el.offsetParent === null)
+            return (_DOMApi.css('display') === 'none' || _DOMApi.css('visibility') === 'hidden' );
         }
 
         function _isElementInViewport() {
@@ -113,8 +113,10 @@
 
         _DOMApi.css = function () {
             if (arguments[0]) {
-                var key = _toolbox.toCamelCase(arguments[0].split('-').join(' '));
-                return arguments[1] ? _el.style[key] = arguments[1] : _el.style[key];
+                var cssKey         = arguments[0];
+                var jsKey          = _toolbox.toCamelCase(cssKey.split('-').join(' '));
+                var externalStyles = document.defaultView.getComputedStyle(_el, null);
+                return arguments[1] ? _el.style[jsKey] = arguments[1] : (_el.style[jsKey] || externalStyles[cssKey] );
             }
             throw _exceptions.missing_key;
         };
