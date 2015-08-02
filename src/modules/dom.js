@@ -54,7 +54,7 @@
 
         _el = _toolbox.isDOMElement(selector) ? selector : (/<[a-z][\s\S]*>/i.test(selector)) ? _create(selector) : _query(selector, arguments[1]);
 
-        if (_el.length === 0) return undefined;
+        if (!_el || (_toolbox.isArray(_el) && _el.length === 0)) return undefined;
 
         for (var key in _addOns) {
             _DOMApi[key] = _addOns.hasOwnProperty(key) ? _addOns[key].bind(_el) : undefined;
@@ -82,7 +82,9 @@
                 }
                 throw _exceptions.missing_argument;
             } else {
-                _el.parentElement.removeChild(_el);
+                _DOMApi.each(function () {
+                    this.parentElement.removeChild(this);
+                });
             }
         };
 
@@ -185,21 +187,26 @@
             return $t(arguments[0], _el);
         };
 
-        _DOMApi.bounds = _el.getBoundingClientRect;
+        _DOMApi.bounds = function () {
+            return _el.getBoundingClientRect();
+        };
 
         _DOMApi.addClass = function () {
             var classes = arguments[0].split(' ');
             _toolbox.iterate(classes, function (className) {
-                _el.classList.add(className);
+                _DOMApi.each(function () {
+                    this.classList.add(className);
+                });
             });
-
             return _DOMApi;
         };
 
         _DOMApi.removeClass = function () {
             var classes = arguments[0].split(' ');
             _toolbox.iterate(classes, function (className) {
-                _el.classList.remove(className);
+                _DOMApi.each(function () {
+                    this.classList.remove(className);
+                });
             });
             return _DOMApi;
         };
@@ -227,9 +234,8 @@
             var callback = arguments[0];
             if (_toolbox.isNodeList(_el)) {
                 _toolbox.iterate(_el, function () {
-                    var $this = $t(this);
-                    callback  = callback.bind($this);
-                    callback($this);
+                    callback = callback.bind(this);
+                    callback($t(this));
                 });
             }
         };
@@ -258,21 +264,27 @@
         function _addListenerMulti(s, fn) {
             var evts = s.split(' ');
             for (var i = 0, iLen = evts.length; i < iLen; i++) {
-                _el.addEventListener(evts[i], fn, false);
+                _DOMApi.each(function () {
+                    this.addEventListener(evts[i], fn, false);
+                });
             }
         }
 
         function _removeListenerMulti(s, fn) {
             var evts = s.split(' ');
             for (var i = 0, iLen = evts.length; i < iLen; i++) {
-                _el.removeEventListener(evts[i], fn, false);
+                _DOMApi.each(function () {
+                    this.removeEventListener(evts[i], fn, false);
+                });
             }
         }
 
         function _triggerEventMulti(s, data) {
             var evts = s.split(' ');
             for (var i = 0, iLen = evts.length; i < iLen; i++) {
-                _el.dispatchEvent(new Event(evts[i], data));
+                _DOMApi.each(function () {
+                    this.dispatchEvent(new Event(evts[i], data));
+                });
             }
         }
 

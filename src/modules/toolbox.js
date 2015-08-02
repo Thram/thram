@@ -30,7 +30,7 @@
         })(this);
 
         _ToolBoxApi.isDOMElement = function (obj) {
-            return obj && (!!obj.tagName || _ToolBoxApi.isType(obj, 'htmldocument'));
+            return obj && (!!obj.tagName || _ToolBoxApi.isType(obj, 'htmldocument') || obj.self === window);
         };
         _ToolBoxApi.isType       = function (obj, type) {
             return _ToolBoxApi.toType(obj) === type;

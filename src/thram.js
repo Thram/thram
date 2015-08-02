@@ -199,10 +199,7 @@
 
     thram._resolve = function () {
         var _callback = arguments[0], _el = arguments[1], args = arguments[2] || arguments[1] || {};
-        if (_callback) {
-            _callback = _callback.bind(_el);
-            _callback(args);
-        }
+        _callback && _callback.call(_el, args);
     };
 
     thram.start  = (function () {
