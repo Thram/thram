@@ -234,9 +234,10 @@
             var callback = arguments[0];
             if (_toolbox.isNodeList(_el)) {
                 _toolbox.iterate(_el, function () {
-                    callback = callback.bind(this);
-                    callback($t(this));
+                    callback.call(this, $t(this));
                 });
+            } else {
+                callback.call(_el, _DOMApi);
             }
         };
 
