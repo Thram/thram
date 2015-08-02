@@ -255,10 +255,31 @@
             _ajax.get(options);
         };
 
+        function _addListenerMulti(s, fn) {
+            var evts = s.split(' ');
+            for (var i = 0, iLen = evts.length; i < iLen; i++) {
+                _el.addEventListener(evts[i], fn, false);
+            }
+        }
+
+        function _removeListenerMulti(s, fn) {
+            var evts = s.split(' ');
+            for (var i = 0, iLen = evts.length; i < iLen; i++) {
+                _el.removeEventListener(evts[i], fn, false);
+            }
+        }
+
+        function _triggerEventMulti(s, data) {
+            var evts = s.split(' ');
+            for (var i = 0, iLen = evts.length; i < iLen; i++) {
+                _el.dispatchEvent(new Event(evts[i], data));
+            }
+        }
+
         _DOMApi.on      = function () {
             var _event = arguments[0], _func = arguments[1];
             if (_toolbox.isString(_event) && _toolbox.isFunction(_func)) {
-                _el.addEventListener(_event, _func, false);
+                _addListenerMulti(_event, _func);
             } else {
                 throw _exceptions.wrong_type_arguments;
             }
@@ -266,7 +287,7 @@
         _DOMApi.off     = function () {
             var _event = arguments[0], _func = arguments[1];
             if (_toolbox.isString(_event)) {
-                _el.removeEventListener(_event, _func);
+                _removeListenerMulti(_event, _func);
             } else {
                 throw _exceptions.wrong_type_arguments;
             }
@@ -274,7 +295,7 @@
         _DOMApi.trigger = function () {
             var _event = arguments[0], data = arguments[1];
             if (_toolbox.isString(_event)) {
-                _el.dispatchEvent(new Event(_event, data));
+                _triggerEventMulti(_event, data);
             } else {
                 throw _exceptions.wrong_type_arguments;
             }
@@ -282,50 +303,10 @@
         _DOMApi.bind    = function () {
             var _event = arguments[0], _func = arguments[1];
             if (_toolbox.isString(_event) && _toolbox.isFunction(_func)) {
-                _el.removeEventListener(_event, _func);
-                _el.addEventListener(_event, _func, false);
+                _removeListenerMulti(_event, _func);
+                _addListenerMulti(_event, _func, false);
             } else {
                 throw _exceptions.wrong_type_arguments;
-            }
-        };
-
-        _DOMApi.touch = function () {
-
-            _el.addEventListener("touchstart", touchStartHandler, false);
-            _el.addEventListener("touchend", touchEndHandler, false);
-
-            var touchesInAction = {};
-
-            function touchStartHandler(event) {
-                var touches = event.changedTouches;
-
-                for (var j = 0; j < touches.length; j++) {
-
-                    /* store touch info on touchstart */
-                    touchesInAction["$" + touches[j].identifier] = {
-
-                        identifier: touches[j].identifier,
-                        pageX     : touches[j].pageX,
-                        pageY     : touches[j].pageY
-                    };
-                }
-            }
-
-            function touchEndHandler(event) {
-                var touches = event.changedTouches;
-
-                for (var j = 0; j < touches.length; j++) {
-
-                    /* access stored touch info on touchend */
-                    var theTouchInfo = touchesInAction["$" + touches[j].identifier];
-                    theTouchInfo.dx  = touches[j].pageX - theTouchInfo.pageX;
-                    /* x-distance moved since touchstart */
-                    theTouchInfo.dy = touches[j].pageY - theTouchInfo.pageY;
-                    /* y-distance moved since touchstart */
-                }
-
-                /* determine what gesture was performed, based on dx and dy (tap, swipe, one or two fingers etc. */
-
             }
         };
 
