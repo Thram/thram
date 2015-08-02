@@ -113,9 +113,9 @@
 
         _DOMApi.css = function () {
             if (arguments[0]) {
-                var cssKey         = arguments[0];
-                var jsKey          = _toolbox.toCamelCase(cssKey.split('-').join(' '));
-                var externalStyles = document.defaultView.getComputedStyle(_el, null);
+                var cssKey         = arguments[0],
+                    jsKey          = _toolbox.toCamelCase(cssKey.split('-').join(' ')),
+                    externalStyles = document.defaultView.getComputedStyle(_el, null);
                 return arguments[1] ? _el.style[jsKey] = arguments[1] : (_el.style[jsKey] || externalStyles[cssKey] );
             }
             throw _exceptions.missing_key;

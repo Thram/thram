@@ -204,6 +204,7 @@
 
     thram.start  = (function () {
         $t.ready()(function () {
+            thram.event.trigger('dom:ready');
             thram.router.process();
             if (thram.router.clientSideRouting) {
                 window.addEventListener("hashchange", function (e) {
