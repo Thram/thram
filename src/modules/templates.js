@@ -111,7 +111,7 @@
                             _render.component({container: component, data: _getData(component)});
                         });
                     }
-                    options.success && options.success(res, $el);
+                    options.success && options.success($el);
                 }
 
                 var container = options.container || $t('[data-thram-view]');
