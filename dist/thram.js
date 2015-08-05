@@ -122,6 +122,18 @@
             return template ? template.html() : undefined;
         }
 
+        _RenderApi.state = function (viewId, stateId, callbackId) {
+            if (_views[viewId]) {
+                var callback = _views[viewId]()[callbackId];
+                if (callback) {
+                    callback()
+                } else {
+                    var target = $t('#' + stateId);
+                    target.size() > 0 && $t('body').scrollTo(target.bounds().top, 300)
+                }
+            }
+        };
+
         _RenderApi.view = function (id, options) {
             var v         = _views[id]();
             options       = options || {};
@@ -207,14 +219,11 @@
             thram.event.trigger('dom:ready');
             thram.router.process();
             if (thram.router.clientSideRouting) {
-                window.addEventListener("hashchange", function (e) {
+                thram.router.onStateChange(function (e) {
                     thram.event.trigger('view:leave', {id: _views.current});
                     thram.router.process();
-                }, false);
+                });
             }
-            window.onbeforeunload = function () {
-                thram.event.trigger('view:leave', {id: _views.current});
-            };
         });
     });
     window.thram = thram;
@@ -1321,12 +1330,13 @@
 (function () {
     window.thram        = window.thram || {};
     window.thram.router = (function () {
-        var _RouterApi  = {},
-            _routes     = {},
-            _templates  = window.thram.templates,
-            _exceptions = window.thram.exceptions,
-            _toolbox    = window.thram.toolbox,
-            _render     = window.thram.render;
+        var _RouterApi   = {},
+            _routes      = {},
+            _currentView = undefined,
+            _templates   = window.thram.templates,
+            _exceptions  = window.thram.exceptions,
+            _toolbox     = window.thram.toolbox,
+            _render      = window.thram.render;
 
         _RouterApi.go = function (route) {
             if (_RouterApi.clientSideRouting && _templates) {
@@ -1341,16 +1351,20 @@
             try {
                 for (var _route in _routes) {
 
-                    var routeMatcher = new RegExp(_route.replace(/:[^\s/]+/g, '([\\w-]+)'));
-                    var url          = window.location.pathname;
+                    var routeMatcher = new RegExp(_route.replace(/:[^\s/]+/g, '([\\w-]+)')),
+                        url          = window.location.pathname,
+                        urlParams    = [],
+                        state        = undefined;
                     if (_RouterApi.clientSideRouting && _templates) {
-                        url = window.location.hash || '/';
-                        if (url.indexOf('#') === 0) {
-                            if (url.indexOf('#/') === 0) {
-                                url = url.substr(url.indexOf('#') + 1);
+                        url       = window.location.hash || '/';
+                        urlParams = url.split('#');
+                        if (urlParams.length > 1) {
+                            if (urlParams[1].indexOf('/') === 0) {
+                                url   = urlParams[1];
+                                state = urlParams[2];
                             } else {
-                                var el = $t('#' + url);
-                                $t('body').scrollTo(el.bounds().top);
+                                url   = '/';
+                                state = urlParams[1];
                             }
                         }
                     }
@@ -1372,10 +1386,16 @@
                         var _routeSettings = _routes[_route];
                         var view           = _toolbox.isString(_routeSettings.view) ? {id: _routeSettings.view} : _routeSettings.view;
 
-                        // Validation to restrict the access to the route
-                        _routeSettings.validate ?
-                            (_routeSettings.validate.validation() ? _render.view(view.id, view.data) : _routeSettings.validate.onValidationFail())
-                            : _render.view(view.id, view.data);
+                        if (view.id === _currentView && state) {
+                            thram.render.state(view.id, state, _routeSettings.states[state]);
+                        } else {
+                            _currentView = view.id;
+                            // Validation to restrict the access to the route
+                            _routeSettings.validate ?
+                                (_routeSettings.validate.validation() ? _render.view(view.id, view.data) : _routeSettings.validate.onValidationFail())
+                                : _render.view(view.id, view.data);
+                            state && thram.render.state(view.id, state, _routeSettings.states[state]);
+                        }
 
                         throw BreakException;
                     }
@@ -1388,6 +1408,10 @@
         _RouterApi.register = function (route, settings) {
             if (!settings.view) throw _exceptions.no_view;
             _routes[route] = settings;
+        };
+
+        _RouterApi.onStateChange = function (callback) {
+            window.addEventListener("hashchange", callback, false);
         };
 
         _RouterApi.clientSideRouting = true;

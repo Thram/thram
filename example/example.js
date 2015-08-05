@@ -3,7 +3,10 @@
  */
 
 // Define your routes
-thram.router.register('/', {view: 'example-view'});
+thram.router.register('/', {
+    view  : 'example-view',
+    states: {'drawer-open': 'onDrawerOpen'}
+});
 thram.router.register('/:app_namespace', {
     view: {
         id  : 'example-view-2',
@@ -13,12 +16,15 @@ thram.router.register('/:app_namespace', {
 
 // Define your views
 thram.create.view('example-view', function () {
-    return {
-        templateURL: 'example-view.html',
-        controller : function (options) {
-            console.log('example-view-1');
-        }
-    }
+    var _ExampleView          = {};
+    _ExampleView.templateURL  = 'example-view.html';
+    _ExampleView.controller   = function (options) {
+        console.log('Controller');
+    };
+    _ExampleView.onDrawerOpen = function (options) {
+        console.log('DrawerOpen');
+    };
+    return _ExampleView;
 });
 
 thram.create.view('example-view-2', function () {

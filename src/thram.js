@@ -122,6 +122,18 @@
             return template ? template.html() : undefined;
         }
 
+        _RenderApi.state = function (viewId, stateId, callbackId) {
+            if (_views[viewId]) {
+                var callback = _views[viewId]()[callbackId];
+                if (callback) {
+                    callback()
+                } else {
+                    var target = $t('#' + stateId);
+                    target.size() > 0 && $t('body').scrollTo(target.bounds().top, 300)
+                }
+            }
+        };
+
         _RenderApi.view = function (id, options) {
             var v         = _views[id]();
             options       = options || {};
@@ -207,14 +219,11 @@
             thram.event.trigger('dom:ready');
             thram.router.process();
             if (thram.router.clientSideRouting) {
-                window.addEventListener("hashchange", function (e) {
+                thram.router.onStateChange(function (e) {
                     thram.event.trigger('view:leave', {id: _views.current});
                     thram.router.process();
-                }, false);
+                });
             }
-            window.onbeforeunload = function () {
-                thram.event.trigger('view:leave', {id: _views.current});
-            };
         });
     });
     window.thram = thram;
