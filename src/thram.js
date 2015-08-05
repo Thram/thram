@@ -223,6 +223,14 @@
     thram.start  = (function () {
         $t.ready()(function () {
             thram.event.trigger('dom:ready');
+            var components = $t('body').find('[data-thram-component]');
+            if (components) {
+                components.each(function (component) {
+                    var thramData = component.data('thram-data');
+                    var data      = thram.toolbox.isString(thramData) ? eval("(" + thramData + ")") : thramData;
+                    thram.render.component({container: component, data: data});
+                });
+            }
             thram.router.process();
             if (thram.router.clientSideRouting) {
                 thram.router.onStateChange(function (e) {
