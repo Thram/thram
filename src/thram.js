@@ -31,7 +31,7 @@
 
         _CreateApi.view = function (id, obj) {
             try {
-                if (thram.toolbox.isFunction(obj().controller)) {
+                if (id === 'base' || thram.toolbox.isFunction(obj().controller)) {
                     _views[id] = obj;
                     return obj;
                 }
