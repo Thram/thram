@@ -124,12 +124,18 @@
 
         _RenderApi.state = function (viewId, stateId, callbackId) {
             if (_views[viewId]) {
-                var callback = _views[viewId]()[callbackId];
+                var callback = thram.toolbox.isFunction(callbackId) ? callbackId : _views[viewId]()[callbackId];
                 if (callback) {
-                    callback()
-                } else {
-                    var target = $t('#' + stateId);
-                    target.size() > 0 && $t('body').scrollTo(target.bounds().top, 300)
+                    thram.event.trigger('before:state:change', {
+                        current: {id: _views.current, state: _views.state},
+                        next   : {id: viewId, state: stateId}
+                    });
+                    callback();
+                    thram.event.trigger('after:state:change', {
+                        previous: {id: _views.current, state: _views.state},
+                        current : {id: viewId, state: stateId}
+                    });
+                    _views.state = stateId;
                 }
             }
         };
@@ -713,21 +719,82 @@
             throw _exceptions.missing_key;
         };
 
-        _DOMApi.append   = function () {
+        _DOMApi.append = function () {
             if (arguments[0])
                 _el.innerHTML += _toolbox.isString(arguments[0]) ? arguments[0] : arguments[0].element.innerHTML;
             return _DOMApi;
         };
-        _DOMApi.scrollTo = function (to, duration) {
-            if (duration < 0) return;
-            var difference = to - _el.scrollTop;
-            var perTick    = difference / duration * 10;
 
-            setTimeout(function () {
-                _el.scrollTop = _el.scrollTop + perTick;
-                if (_el.scrollTop === to) return;
-                _DOMApi.scrollTo(to, duration - 10);
-            }, 10);
+        _DOMApi.scrollTo = function (target, duration) {
+            target   = Math.round(target);
+            duration = Math.round(duration);
+            if (duration < 0) {
+                return Promise.reject("bad duration");
+            }
+            if (duration === 0) {
+                _el.scrollTop = target;
+                return Promise.resolve();
+            }
+
+            var start_time = Date.now();
+            var end_time   = start_time + duration;
+
+            var start_top = _el.scrollTop;
+            var distance  = target - start_top;
+
+            // based on http://en.wikipedia.org/wiki/Smoothstep
+            var smooth_step = function (start, end, point) {
+                if (point <= start) {
+                    return 0;
+                }
+                if (point >= end) {
+                    return 1;
+                }
+                var x = (point - start) / (end - start); // interpolation
+                return x * x * (3 - 2 * x);
+            };
+
+            return new Promise(function (resolve, reject) {
+                // This is to keep track of where the element's scrollTop is
+                // supposed to be, based on what we're doing
+                var previous_top = _el.scrollTop;
+
+                // This is like a think function from a game loop
+                var scroll_frame = function () {
+                    if (_el.scrollTop != previous_top) {
+                        reject("interrupted");
+                        return;
+                    }
+
+                    // set the scrollTop for this frame
+                    var now       = Date.now();
+                    var point     = smooth_step(start_time, end_time, now);
+                    var frameTop  = Math.round(start_top + (distance * point));
+                    _el.scrollTop = frameTop;
+
+                    // check if we're done!
+                    if (now >= end_time) {
+                        resolve();
+                        return;
+                    }
+
+                    // If we were supposed to scroll but didn't, then we
+                    // probably hit the limit, so consider it done; not
+                    // interrupted.
+                    if (_el.scrollTop === previous_top
+                        && _el.scrollTop !== frameTop) {
+                        resolve();
+                        return;
+                    }
+                    previous_top = _el.scrollTop;
+
+                    // schedule next frame for execution
+                    setTimeout(scroll_frame, 0);
+                };
+
+                // boostrap the animation process
+                setTimeout(scroll_frame, 0);
+            });
         };
 
         _DOMApi.prepend = function () {
@@ -737,7 +804,7 @@
         };
 
         _DOMApi.size = function () {
-            return _el.length;
+            return _toolbox.isNodeList(_el) ? _el.length : (_toolbox.isDOMElement(_el) ? 1 : 0);
         };
 
         _DOMApi.html = function () {

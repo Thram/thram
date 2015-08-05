@@ -124,12 +124,18 @@
 
         _RenderApi.state = function (viewId, stateId, callbackId) {
             if (_views[viewId]) {
-                var callback = _views[viewId]()[callbackId];
+                var callback = thram.toolbox.isFunction(callbackId) ? callbackId : _views[viewId]()[callbackId];
                 if (callback) {
-                    callback()
-                } else {
-                    var target = $t('#' + stateId);
-                    target.size() > 0 && $t('body').scrollTo(target.bounds().top, 300)
+                    thram.event.trigger('before:state:change', {
+                        current: {id: _views.current, state: _views.state},
+                        next   : {id: viewId, state: stateId}
+                    });
+                    callback();
+                    thram.event.trigger('after:state:change', {
+                        previous: {id: _views.current, state: _views.state},
+                        current : {id: viewId, state: stateId}
+                    });
+                    _views.state = stateId;
                 }
             }
         };
