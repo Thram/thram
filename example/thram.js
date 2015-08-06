@@ -146,11 +146,11 @@
             options.async = false;
             var success   = options.success;
 
-            function _initView() {
+            function _initView(res) {
                 var base       = thram.get.view('base');
                 base && base(options.data);
                 _views.current = id;
-                v.controller(options.data);
+                v.controller(res, options.data);
                 thram.event.trigger('view:enter', {id: id});
                 success && success(v);
                 thram.event.trigger('view:render:finished', {id: id});
@@ -166,7 +166,7 @@
                         options.async   = true;
                         options.success = function (res) {
                             v.template = res;
-                            _initView();
+                            _initView(res);
                         };
                         template        = v.templateURL;
                     }
@@ -189,7 +189,7 @@
 
             function _initComponent() {
                 if (c.controller) {
-                    c.controller(options.data);
+                    c.controller(options.container, options.data);
                 }
                 success && success(c);
                 thram.event.trigger('component:render:finished', {id: id});
@@ -624,7 +624,7 @@
     var $t       = function () {
         // DOM Manipulation
         var _DOMApi     = {},
-            _el         = undefined,
+            _el,
             selector    = arguments[0],
             _toolbox    = window.thram.toolbox,
             _exceptions = window.thram.exceptions,
@@ -789,8 +789,7 @@
                     // If we were supposed to scroll but didn't, then we
                     // probably hit the limit, so consider it done; not
                     // interrupted.
-                    if (_el.scrollTop === previous_top
-                        && _el.scrollTop !== frameTop) {
+                    if (_el.scrollTop === previous_top && _el.scrollTop !== frameTop) {
                         resolve();
                         return;
                     }

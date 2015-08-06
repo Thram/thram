@@ -18,7 +18,7 @@
     var $t       = function () {
         // DOM Manipulation
         var _DOMApi     = {},
-            _el         = undefined,
+            _el,
             selector    = arguments[0],
             _toolbox    = window.thram.toolbox,
             _exceptions = window.thram.exceptions,
@@ -183,8 +183,7 @@
                     // If we were supposed to scroll but didn't, then we
                     // probably hit the limit, so consider it done; not
                     // interrupted.
-                    if (_el.scrollTop === previous_top
-                        && _el.scrollTop !== frameTop) {
+                    if (_el.scrollTop === previous_top && _el.scrollTop !== frameTop) {
                         resolve();
                         return;
                     }
