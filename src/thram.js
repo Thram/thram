@@ -146,11 +146,11 @@
             options.async = false;
             var success   = options.success;
 
-            function _initView(res) {
+            function _initView($container) {
                 var base       = thram.get.view('base');
                 base && base(options.data);
                 _views.current = id;
-                v.controller(res, options.data);
+                v.controller($container, options.data);
                 thram.event.trigger('view:enter', {id: id});
                 success && success(v);
                 thram.event.trigger('view:render:finished', {id: id});
@@ -164,9 +164,9 @@
                     template = _getScriptTemplate(v.templateURL);
                     if (!template) {
                         options.async   = true;
-                        options.success = function (res) {
-                            v.template = res;
-                            _initView(res);
+                        options.success = function ($container, template) {
+                            v.template = template;
+                            _initView($container);
                         };
                         template        = v.templateURL;
                     }
