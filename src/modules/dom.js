@@ -27,9 +27,10 @@
             _resolve    = window.thram._resolve;
 
         function _create() {
-            var helper = document.createElement('div');
+            var helper   = document.createElement('div');
             helper.innerHTML += arguments[0];
-            return helper.children;
+            var children = [].slice.call(helper.children);
+            return children.length === 1 ? children[0] : children;
         }
 
         function _query() {
