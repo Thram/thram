@@ -635,7 +635,7 @@
         function _create() {
             var helper = document.createElement('div');
             helper.innerHTML += arguments[0];
-            return helper.firstElementChild;
+            return helper.children;
         }
 
         function _query() {
