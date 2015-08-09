@@ -1266,6 +1266,7 @@
     window.thram.templates = (function () {
         var _TemplatesApi = {},
             _pool         = {},
+            _ajax         = thram.ajax,
             _toolbox      = thram.toolbox,
             _storage      = thram.storage,
             _render       = thram.render,
@@ -1285,7 +1286,7 @@
             switch (_pool[templateUrl].status) {
                 case 'pending':
                     _pool[templateUrl].status = 'loading';
-                    return $t.ajax({
+                    return _ajax.get({
                         type   : 'html',
                         url    : templateUrl,
                         success: function (res) {
