@@ -39,21 +39,22 @@
             switch (_pool[templateUrl].status) {
                 case 'pending':
                     _pool[templateUrl].status = 'loading';
-                    return $t("<div>").load({
+                    return $t.ajax({
+                        type   : 'html',
                         url    : templateUrl,
                         success: function (res) {
                             _pool[templateUrl].status = 'loaded';
-                            _TemplatesApi.cacheEnabled && _storage && _storage.set('template:' + templateUrl, res.html());
+                            _TemplatesApi.cacheEnabled && _storage && _storage.set('template:' + templateUrl, res);
                             var done                  = 0;
                             _pool[templateUrl].queue.forEach(function (template) {
-                                template.success && template.success(res.html(), template.container);
+                                template.success && template.success(res, template.container);
                                 done++;
                                 if (done === _pool[templateUrl].queue.length) {
                                     _pool[templateUrl].queue = [];
                                 }
                             });
 
-                            return success && success(res.html(), container);
+                            return success && success(res, container);
                         },
                         error  : error
                     });
