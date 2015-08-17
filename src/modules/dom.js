@@ -40,7 +40,7 @@
         }
 
         function _isHidden() {
-            return (_DOMApi.css('display') === 'none' || _DOMApi.css('visibility') === 'hidden' );
+            return (_DOMApi.css('display') === 'none' || _DOMApi.css('visibility') === 'hidden' || _DOMApi.bounds().height == 0 || _DOMApi.bounds().width == 0);
         }
 
         function _isElementInViewport() {
